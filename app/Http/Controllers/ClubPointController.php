@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\BusinessSetting;
-use App\ClubPointDetail;
-use App\ClubPoint;
-use App\Product;
-use App\Wallet;
-use App\Order;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use App\Models\BusinessSetting;
+use App\Models\ClubPointDetail;
+use App\Models\ClubPoint;
+use App\Models\Product;
+use App\Models\Wallet;
+use App\Models\Order;
+use App\Models\User;
 
 class ClubPointController extends Controller
 {
@@ -58,13 +59,13 @@ class ClubPointController extends Controller
         return redirect()->route('set_product_points');
     }
 
-    public function set_point_edit($id)
+    public function set_point_edit(int|string $id)
     {
         $product = Product::findOrFail(decrypt($id));
         return view('club_points.product_point_edit', compact('product'));
     }
 
-    public function update_product_point(Request $request, $id)
+    public function update_product_point(Request $request, int|string $id)
     {
         $product = Product::findOrFail($id);
         $product->earn_point = $request->point;
@@ -111,7 +112,7 @@ class ClubPointController extends Controller
         }
     }
 
-    public function club_point_detail($id)
+    public function club_point_detail(int|string $id)
     {
         $club_point_details = ClubPointDetail::where('club_point_id', decrypt($id))->paginate(12);
         return view('club_points.club_point_details', compact('club_point_details'));
@@ -127,7 +128,12 @@ class ClubPointController extends Controller
         $wallet->payment_method = 'Club Point Convert';
         $wallet->payment_details = 'Club Point Convert';
         $wallet->save();
+
         $user = Auth::user();
+        if (!$user instanceof User) {
+            return 0;
+        }
+
         $user->balance = $user->balance + floatval($club_point->points / $club_point_convert_rate);
         $user->save();
         $club_point->convert_status = 1;

@@ -8,7 +8,7 @@ use App\Models\Product;
 use App\Models\CategoryTranslation;
 use App\Utility\CategoryUtility;
 use Illuminate\Support\Str;
-use Cache;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -117,7 +117,7 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang = $request->lang;
         $category = Category::findOrFail($id);

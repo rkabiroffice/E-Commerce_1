@@ -33,6 +33,6 @@ return [
      * Optional email address of the merchant
      *
      */
-    'merchantEmail' => env('MERCHANT_EMAIL'),
+    'merchantEmail' => env('MERCHANT_EMAIL', ''),
 
 ];

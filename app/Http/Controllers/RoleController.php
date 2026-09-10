@@ -79,7 +79,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang = $request->lang;
         $role = Role::findOrFail($id);
@@ -133,6 +133,6 @@ class RoleController extends Controller
     }
 
     public function create_admin_permissions(){
-        
+
     }
 }

@@ -11,11 +11,11 @@ use App\Models\ProductTax;
 use App\Models\AttributeValue;
 use App\Models\Cart;
 use Carbon\Carbon;
-use Combinations;
-use CoreComponentRepository;
-use Artisan;
-use Cache;
-use Str;
+use Laracon21\Combinations\Combinations;
+use MehediIitdu\CoreComponentRepository\CoreComponentRepository;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use App\Services\ProductService;
 use App\Services\ProductTaxService;
 use App\Services\ProductFlashDealService;
@@ -23,10 +23,10 @@ use App\Services\ProductStockService;
 
 class ProductController extends Controller
 {
-    protected $productService;
-    protected $productTaxService;
-    protected $productFlashDealService;
-    protected $productStockService;
+    protected ProductService $productService;
+    protected ProductTaxService $productTaxService;
+    protected ProductFlashDealService $productFlashDealService;
+    protected ProductStockService $productStockService;
 
     public function __construct(
         ProductService $productService,
@@ -269,7 +269,7 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function seller_product_edit(Request $request, $id)
+    public function seller_product_edit(Request $request, int|string $id)
     {
         $product = Product::findOrFail($id);
         if ($product->digital == 1) {
@@ -290,7 +290,7 @@ class ProductController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  Product  $product
      * @return \Illuminate\Http\Response
      */
     public function update(ProductRequest $request, Product $product)
@@ -394,7 +394,7 @@ class ProductController extends Controller
         $product_new = $product->replicate();
         $product_new->slug = $product_new->slug . '-' . Str::random(5);
         $product_new->save();
-        
+
         //Product Stock
         $this->productStockService->product_duplicate_store($product->stocks, $product_new);
 
@@ -442,7 +442,7 @@ class ProductController extends Controller
         }
 
         $product->save();
-        
+
         Artisan::call('view:clear');
         Artisan::call('cache:clear');
         return 1;
@@ -465,7 +465,7 @@ class ProductController extends Controller
         }
 
         $product->save();
-        
+
         Artisan::call('view:clear');
         Artisan::call('cache:clear');
         return 1;
@@ -501,7 +501,7 @@ class ProductController extends Controller
                 $name = 'choice_options_' . $no;
                 $data = array();
                 // foreach (json_decode($request[$name][0]) as $key => $item) {
-                foreach ($request[$name] as $key => $item) {
+                foreach ($request[$name] as $choiceKey => $item) {
                     // array_push($data, $item->value);
                     array_push($data, $item);
                 }
@@ -533,7 +533,7 @@ class ProductController extends Controller
                 $name = 'choice_options_' . $no;
                 $data = array();
                 // foreach (json_decode($request[$name][0]) as $key => $item) {
-                foreach ($request[$name] as $key => $item) {
+                foreach ($request[$name] as $choiceKey => $item) {
                     // array_push($data, $item->value);
                     array_push($data, $item);
                 }

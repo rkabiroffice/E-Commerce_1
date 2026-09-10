@@ -13,7 +13,8 @@
 
 //Admin Panel
 
-use App\Http\Controllers\RefundRequestController;
+use App\Http\Controllers\Api\V2\RefundRequestController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function(){
     Route::controller(RefundRequestController::class)->group(function () {

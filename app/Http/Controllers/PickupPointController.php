@@ -88,7 +88,7 @@ class PickupPointController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang           = $request->lang;
         $pickup_point   = PickupPoint::findOrFail($id);

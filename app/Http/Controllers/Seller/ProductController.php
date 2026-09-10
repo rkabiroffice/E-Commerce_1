@@ -3,30 +3,29 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Requests\ProductRequest;
-use Illuminate\Http\Request;
 use App\Models\AttributeValue;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTax;
 use App\Models\ProductTranslation;
-use Carbon\Carbon;
-use Combinations;
-use Artisan;
-use Auth;
-use Str;
-
 use App\Services\ProductService;
 use App\Services\ProductTaxService;
 use App\Services\ProductFlashDealService;
 use App\Services\ProductStockService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Laracon21\Combinations\Combinations;
 
 class ProductController extends Controller
 {
-    protected $productService;
-    protected $productTaxService;
-    protected $productFlashDealService;
-    protected $productStockService;
+    protected ProductService $productService;
+    protected ProductTaxService $productTaxService;
+    protected ProductFlashDealService $productFlashDealService;
+    protected ProductStockService $productStockService;
 
     public function __construct(
         ProductService $productService,
@@ -86,7 +85,7 @@ class ProductController extends Controller
             '_token', 'sku', 'choice', 'tax_id', 'tax', 'tax_type', 'flash_deal_id', 'flash_discount', 'flash_discount_type'
         ]));
         $request->merge(['product_id' => $product->id]);
-        
+
         //VAT & Tax
         if($request->tax_id) {
             $this->productTaxService->store($request->only([
@@ -113,7 +112,7 @@ class ProductController extends Controller
         return redirect()->route('seller.products');
     }
 
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $product = Product::findOrFail($id);
 
@@ -188,7 +187,7 @@ class ProductController extends Controller
             foreach ($request->choice_no as $key => $no) {
                 $name = 'choice_options_' . $no;
                 $data = array();
-                foreach ($request[$name] as $key => $item) {
+                foreach ($request[$name] as $choiceKey => $item) {
                     array_push($data, $item);
                 }
                 array_push($options, $data);
@@ -218,7 +217,7 @@ class ProductController extends Controller
             foreach ($request->choice_no as $key => $no) {
                 $name = 'choice_options_' . $no;
                 $data = array();
-                foreach ($request[$name] as $key => $item) {
+                foreach ($request[$name] as $choiceKey => $item) {
                     array_push($data, $item);
                 }
                 array_push($options, $data);
@@ -272,7 +271,7 @@ class ProductController extends Controller
         return 0;
     }
 
-    public function duplicate($id)
+    public function duplicate(int|string $id)
     {
         $product = Product::find($id);
         if (Auth::user()->id != $product->user_id) {
@@ -305,7 +304,7 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         $product = Product::findOrFail($id);
 

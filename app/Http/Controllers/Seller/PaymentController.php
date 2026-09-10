@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Models\Payment;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {

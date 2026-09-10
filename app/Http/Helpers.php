@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\App as AppFacade;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Cart;
 use App\Models\City;
@@ -22,6 +28,7 @@ use App\Models\CombinedOrder;
 use App\Models\SellerPackage;
 use App\Models\BusinessSetting;
 use App\Models\CustomerPackage;
+use App\Models\OrderDetail;
 use App\Utility\SendSMSUtility;
 use App\Utility\CategoryUtility;
 use App\Models\SellerPackagePayment;
@@ -33,7 +40,7 @@ use App\Http\Controllers\CommissionController;
 
 //sensSMS function for OTP
 if (!function_exists('sendSMS')) {
-    function sendSMS($to, $from, $text, $template_id)
+    function sendSMS(string|int $to, string|int $from, string $text, int|string|null $template_id)
     {
         return SendSMSUtility::sendSMS($to, $from, $text, $template_id);
     }
@@ -41,7 +48,7 @@ if (!function_exists('sendSMS')) {
 
 //highlights the selected navigation on admin panel
 if (!function_exists('areActiveRoutes')) {
-    function areActiveRoutes(array $routes, $output = "active")
+    function areActiveRoutes(array $routes, string $output = "active")
     {
         foreach ($routes as $route) {
             if (Route::currentRouteName() == $route) return $output;
@@ -51,7 +58,7 @@ if (!function_exists('areActiveRoutes')) {
 
 //highlights the selected navigation on frontend
 if (!function_exists('areActiveRoutesHome')) {
-    function areActiveRoutesHome(array $routes, $output = "active")
+    function areActiveRoutesHome(array $routes, string $output = "active")
     {
         foreach ($routes as $route) {
             if (Route::currentRouteName() == $route) return $output;
@@ -67,12 +74,8 @@ if (!function_exists('default_language')) {
     }
 }
 
-/**
- * Save JSON File
- * @return Response
- */
 if (!function_exists('convert_to_usd')) {
-    function convert_to_usd($amount)
+    function convert_to_usd(float|int|string $amount)
     {
         $currency = Currency::find(get_setting('system_default_currency'));
         return (floatval($amount) / floatval($currency->exchange_rate)) * Currency::where('code', 'USD')->first()->exchange_rate;
@@ -80,7 +83,7 @@ if (!function_exists('convert_to_usd')) {
 }
 
 if (!function_exists('convert_to_kes')) {
-    function convert_to_kes($amount)
+    function convert_to_kes(float|int|string $amount)
     {
         $currency = Currency::find(get_setting('system_default_currency'));
         return (floatval($amount) / floatval($currency->exchange_rate)) * Currency::where('code', 'KES')->first()->exchange_rate;
@@ -89,7 +92,7 @@ if (!function_exists('convert_to_kes')) {
 
 //filter products based on vendor activation system
 if (!function_exists('filter_products')) {
-    function filter_products($products)
+    function filter_products(mixed $products)
     {
         $verified_sellers = verified_sellers_id();
         if (get_setting('vendor_system_activation') == 1) {
@@ -109,7 +112,7 @@ if (!function_exists('filter_products')) {
 
 //cache products based on category
 if (!function_exists('get_cached_products')) {
-    function get_cached_products($category_id = null)
+    function get_cached_products(?int $category_id = null)
     {
         $products = \App\Models\Product::where('published', 1)->where('approved', '1')->where('auction_product', 0);
         $verified_sellers = verified_sellers_id();
@@ -141,7 +144,7 @@ if (!function_exists('verified_sellers_id')) {
     function verified_sellers_id()
     {
         return Cache::rememberForever('verified_sellers_id', function () {
-            return App\Models\Shop::where('verification_status', 1)->pluck('user_id')->toArray();
+            return Shop::where('verification_status', 1)->pluck('user_id')->toArray();
         });
     }
 }
@@ -157,7 +160,7 @@ if (!function_exists('get_system_default_currency')) {
 
 //converts currency to home default currency
 if (!function_exists('convert_price')) {
-    function convert_price($price)
+    function convert_price(float|int|string $price)
     {
         if (Session::has('currency_code') && (Session::get('currency_code') != get_system_default_currency()->code)) {
             $price = floatval($price) / floatval(get_system_default_currency()->exchange_rate);
@@ -180,7 +183,7 @@ if (!function_exists('currency_symbol')) {
 
 //formats currency
 if (!function_exists('format_price')) {
-    function format_price($price, $isMinimize = false)
+    function format_price(float|int|string $price, bool $isMinimize = false)
     {
         if (get_setting('decimal_separator') == 1) {
             $fomated_price = number_format($price, get_setting('no_of_decimals'));
@@ -189,7 +192,7 @@ if (!function_exists('format_price')) {
         }
 
 
-        // Minimize the price 
+        // Minimize the price
         if ($isMinimize) {
             $temp = number_format($price / 1000000000, get_setting('no_of_decimals'), ".", "");
 
@@ -217,14 +220,14 @@ if (!function_exists('format_price')) {
 
 //formats price to home default price with convertion
 if (!function_exists('single_price')) {
-    function single_price($price)
+    function single_price(float|int|string $price)
     {
         return format_price(convert_price($price));
     }
 }
 
 if (!function_exists('discount_in_percentage')) {
-    function discount_in_percentage($product)
+    function discount_in_percentage(Product $product)
     {
         $base = home_base_price($product, false);
         $reduced = home_discounted_base_price($product, false);
@@ -236,7 +239,7 @@ if (!function_exists('discount_in_percentage')) {
 
 //Shows Price on page based on carts
 if (!function_exists('cart_product_price')) {
-    function cart_product_price($cart_product, $product, $formatted = true, $tax = true)
+    function cart_product_price(array $cart_product, Product $product, bool $formatted = true, bool $tax = true)
     {
         if ($product->auction_product == 0) {
             $str = '';
@@ -273,7 +276,7 @@ if (!function_exists('cart_product_price')) {
             $price = $product->bids->max('amount');
         }
 
-        //calculation of taxes 
+        //calculation of taxes
         if ($tax) {
             $taxAmount = 0;
             foreach ($product->taxes as $product_tax) {
@@ -295,7 +298,7 @@ if (!function_exists('cart_product_price')) {
 }
 
 if (!function_exists('cart_product_tax')) {
-    function cart_product_tax($cart_product, $product, $formatted = true)
+    function cart_product_tax(array $cart_product, Product $product, bool $formatted = true)
     {
         $str = '';
         if ($cart_product['variation'] != null) {
@@ -324,7 +327,7 @@ if (!function_exists('cart_product_tax')) {
             }
         }
 
-        //calculation of taxes 
+        //calculation of taxes
         $tax = 0;
         foreach ($product->taxes as $product_tax) {
             if ($product_tax->tax_type == 'percent') {
@@ -343,7 +346,7 @@ if (!function_exists('cart_product_tax')) {
 }
 
 if (!function_exists('cart_product_discount')) {
-    function cart_product_discount($cart_product, $product, $formatted = false)
+    function cart_product_discount(array $cart_product, Product $product, bool $formatted = false)
     {
         $str = '';
         if ($cart_product['variation'] != null) {
@@ -383,7 +386,7 @@ if (!function_exists('cart_product_discount')) {
 
 // all discount
 if (!function_exists('carts_product_discount')) {
-    function carts_product_discount($cart_products, $formatted = false)
+    function carts_product_discount(array $cart_products, bool $formatted = false)
     {
         $discount = 0;
         foreach ($cart_products as $key => $cart_product) {
@@ -425,7 +428,7 @@ if (!function_exists('carts_product_discount')) {
 }
 
 if (!function_exists('carts_coupon_discount')) {
-    function carts_coupon_discount($code, $formatted = false)
+    function carts_coupon_discount(string $code, bool $formatted = false)
     {
         $coupon = Coupon::where('code', $code)->first();
         $coupon_discount = 0;
@@ -463,7 +466,7 @@ if (!function_exists('carts_coupon_discount')) {
                     } elseif ($coupon->type == 'product_base') {
                         foreach ($carts as $key => $cartItem) {
                             $product = Product::find($cartItem['product_id']);
-                            foreach ($coupon_details as $key => $coupon_detail) {
+                            foreach ($coupon_details as $coupon_index => $coupon_detail) {
                                 if ($coupon_detail->product_id == $cartItem['product_id']) {
                                     if ($coupon->discount_type == 'percent') {
                                         $coupon_discount += (cart_product_price($cartItem, $product, false, false) * $coupon->discount / 100) * $cartItem['quantity'];
@@ -507,7 +510,7 @@ if (!function_exists('carts_coupon_discount')) {
 
 //Shows Price on page based on low to high
 if (!function_exists('home_price')) {
-    function home_price($product, $formatted = true)
+    function home_price(Product $product, bool $formatted = true)
     {
         $lowest_price = $product->unit_price;
         $highest_price = $product->unit_price;
@@ -547,7 +550,7 @@ if (!function_exists('home_price')) {
 
 //Shows Price on page based on low to high with discount
 if (!function_exists('home_discounted_price')) {
-    function home_discounted_price($product, $formatted = true)
+    function home_discounted_price(Product $product, bool $formatted = true)
     {
         $lowest_price = $product->unit_price;
         $highest_price = $product->unit_price;
@@ -608,7 +611,7 @@ if (!function_exists('home_discounted_price')) {
 
 //Shows Base Price
 if (!function_exists('home_base_price_by_stock_id')) {
-    function home_base_price_by_stock_id($id)
+    function home_base_price_by_stock_id(int|string $id)
     {
         $product_stock = ProductStock::findOrFail($id);
         $price = $product_stock->price;
@@ -626,7 +629,7 @@ if (!function_exists('home_base_price_by_stock_id')) {
     }
 }
 if (!function_exists('home_base_price')) {
-    function home_base_price($product, $formatted = true)
+    function home_base_price(Product $product, bool $formatted = true)
     {
         $price = $product->unit_price;
         $tax = 0;
@@ -645,7 +648,7 @@ if (!function_exists('home_base_price')) {
 
 //Shows Base Price with discount
 if (!function_exists('home_discounted_base_price_by_stock_id')) {
-    function home_discounted_base_price_by_stock_id($id)
+    function home_discounted_base_price_by_stock_id(int|string $id)
     {
         $product_stock = ProductStock::findOrFail($id);
         $product = $product_stock->product;
@@ -686,7 +689,7 @@ if (!function_exists('home_discounted_base_price_by_stock_id')) {
 
 //Shows Base Price with discount
 if (!function_exists('home_discounted_base_price')) {
-    function home_discounted_base_price($product, $formatted = true)
+    function home_discounted_base_price(Product $product, bool $formatted = true)
     {
         $price = $product->unit_price;
         $tax = 0;
@@ -724,7 +727,7 @@ if (!function_exists('home_discounted_base_price')) {
 }
 
 if (!function_exists('renderStarRating')) {
-    function renderStarRating($rating, $maxRating = 5)
+    function renderStarRating(float|int|string $rating, int $maxRating = 5)
     {
         $fullStar = "<i class = 'las la-star active'></i>";
         $halfStar = "<i class = 'las la-star half'></i>";
@@ -742,10 +745,10 @@ if (!function_exists('renderStarRating')) {
     }
 }
 
-function translate($key, $lang = null, $addslashes = false)
+function translate(string $key, ?string $lang = null, bool $addslashes = false)
 {
     if ($lang == null) {
-        $lang = App::getLocale();
+        $lang = AppFacade::getLocale();
     }
 
     $lang_key = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', strtolower($key)));
@@ -786,13 +789,13 @@ function translate($key, $lang = null, $addslashes = false)
     return $addslashes ? addslashes(trim($translations_en[$lang_key])) : trim($translations_en[$lang_key]);
 }
 
-function remove_invalid_charcaters($str)
+function remove_invalid_charcaters(string $str)
 {
     $str = str_ireplace(array("\\"), '', $str);
     return str_ireplace(array('"'), '\"', $str);
 }
 
-function getShippingCost($carts, $index, $carrier = '')
+function getShippingCost(array $carts, int $index, string $carrier = '')
 {
     $shipping_type = get_setting('shipping_type');
     $admin_products = array();
@@ -899,7 +902,7 @@ function getShippingCost($carts, $index, $carrier = '')
 
 //return carrier wise shipping cost against seller
 if (!function_exists('carrier_base_price')) {
-    function carrier_base_price($carts, $carrier_id, $owner_id)
+    function carrier_base_price(array $carts, int|string $carrier_id, int|string $owner_id)
     {
         $shipping = 0;
         foreach ($carts as $key => $cartItem) {
@@ -914,7 +917,7 @@ if (!function_exists('carrier_base_price')) {
 
 //return seller wise carrier list
 if (!function_exists('seller_base_carrier_list')) {
-    function seller_base_carrier_list($owner_id)
+    function seller_base_carrier_list(int|string $owner_id)
     {
         $carrier_list = array();
         $carts = Cart::where('user_id', auth()->user()->id)->get();
@@ -933,7 +936,7 @@ if (!function_exists('seller_base_carrier_list')) {
 
 function timezones()
 {
-    return Timezones::timezonesToArray();
+    return array_combine(timezone_identifiers_list(), timezone_identifiers_list());
 }
 
 if (!function_exists('app_timezone')) {
@@ -945,7 +948,7 @@ if (!function_exists('app_timezone')) {
 
 //return file uploaded via uploader
 if (!function_exists('uploaded_asset')) {
-    function uploaded_asset($id)
+    function uploaded_asset(int|string $id)
     {
         if (($asset = \App\Models\Upload::find($id)) != null) {
             return $asset->external_link == null ? my_asset($asset->file_name) : $asset->external_link;
@@ -955,14 +958,7 @@ if (!function_exists('uploaded_asset')) {
 }
 
 if (!function_exists('my_asset')) {
-    /**
-     * Generate an asset path for the application.
-     *
-     * @param string $path
-     * @param bool|null $secure
-     * @return string
-     */
-    function my_asset($path, $secure = null)
+    function my_asset(string $path, bool|null $secure = null)
     {
         if (env('FILESYSTEM_DRIVER') == 's3') {
             return Storage::url($path);
@@ -973,14 +969,7 @@ if (!function_exists('my_asset')) {
 }
 
 if (!function_exists('static_asset')) {
-    /**
-     * Generate an asset path for the application.
-     *
-     * @param string $path
-     * @param bool|null $secure
-     * @return string
-     */
-    function static_asset($path, $secure = null)
+    function static_asset(string $path, bool|null $secure = null)
     {
         return app('url')->asset($path, $secure);
     }
@@ -1015,14 +1004,7 @@ if (!function_exists('getFileBaseURL')) {
 
 
 if (!function_exists('isUnique')) {
-    /**
-     * Generate an asset path for the application.
-     *
-     * @param string $path
-     * @param bool|null $secure
-     * @return string
-     */
-    function isUnique($email)
+    function isUnique(string $email)
     {
         $user = \App\Models\User::where('email', $email)->first();
 
@@ -1035,7 +1017,7 @@ if (!function_exists('isUnique')) {
 }
 
 if (!function_exists('get_setting')) {
-    function get_setting($key, $default = null, $lang = false)
+    function get_setting(string $key, mixed $default = null, bool $lang = false)
     {
         $settings = Cache::remember('business_settings', 86400, function () {
             return BusinessSetting::all();
@@ -1051,7 +1033,7 @@ if (!function_exists('get_setting')) {
     }
 }
 
-function hex2rgba($color, $opacity = false)
+function hex2rgba(string $color, bool|float|int $opacity = false)
 {
     $default = 'rgb(230,46,4)';
 
@@ -1114,7 +1096,7 @@ if (!function_exists('isCustomer')) {
 }
 
 if (!function_exists('formatBytes')) {
-    function formatBytes($bytes, $precision = 2)
+    function formatBytes(int|float|string $bytes, int $precision = 2)
     {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
@@ -1132,7 +1114,7 @@ if (!function_exists('formatBytes')) {
 
 // duplicates m$ excel's ceiling function
 if (!function_exists('ceiling')) {
-    function ceiling($number, $significance = 1)
+    function ceiling(int|float|string $number, int|float|string $significance = 1)
     {
         return (is_numeric($number) && is_numeric($significance)) ? (ceil($number / $significance) * $significance) : false;
     }
@@ -1140,7 +1122,7 @@ if (!function_exists('ceiling')) {
 
 //for api
 if (!function_exists('get_images_path')) {
-    function get_images_path($given_ids, $with_trashed = false)
+    function get_images_path(string $given_ids, bool $with_trashed = false)
     {
         $paths = [];
         foreach (explode(',', $given_ids) as $id) {
@@ -1153,7 +1135,7 @@ if (!function_exists('get_images_path')) {
 
 //for api
 if (!function_exists('checkout_done')) {
-    function checkout_done($combined_order_id, $payment)
+    function checkout_done(int|string $combined_order_id, mixed $payment)
     {
         $combined_order = CombinedOrder::find($combined_order_id);
 
@@ -1173,7 +1155,7 @@ if (!function_exists('checkout_done')) {
 
 //for api
 if (!function_exists('wallet_payment_done')) {
-    function wallet_payment_done($user_id, $amount, $payment_method, $payment_details)
+    function wallet_payment_done(int|string $user_id, float|int|string $amount, string $payment_method, mixed $payment_details)
     {
         $user = \App\Models\User::find($user_id);
         $user->balance = $user->balance + $amount;
@@ -1189,7 +1171,7 @@ if (!function_exists('wallet_payment_done')) {
 }
 
 if (!function_exists('purchase_payment_done')) {
-    function purchase_payment_done($user_id, $package_id)
+    function purchase_payment_done(int|string $user_id, int|string $package_id)
     {
         $user = User::findOrFail($user_id);
         $user->customer_package_id = $package_id;
@@ -1202,7 +1184,7 @@ if (!function_exists('purchase_payment_done')) {
 }
 
 if (!function_exists('seller_purchase_payment_done')) {
-    function seller_purchase_payment_done($user_id, $seller_package_id, $amount, $payment_method, $payment_details)
+    function seller_purchase_payment_done(int|string $user_id, int|string $seller_package_id, float|int|string $amount, string $payment_method, mixed $payment_details)
     {
         $seller = Shop::where('user_id', $user_id)->first();
         $seller->seller_package_id = $seller_package_id;
@@ -1223,7 +1205,7 @@ if (!function_exists('seller_purchase_payment_done')) {
 }
 
 if (!function_exists('customer_purchase_payment_done')) {
-    function customer_purchase_payment_done($user_id, $customer_package_id)
+    function customer_purchase_payment_done(int|string $user_id, int|string $customer_package_id)
     {
         $user = User::findOrFail($user_id);
         $user->customer_package_id = $customer_package_id;
@@ -1234,7 +1216,7 @@ if (!function_exists('customer_purchase_payment_done')) {
 }
 
 if (!function_exists('product_restock')) {
-    function product_restock($orderDetail)
+    function product_restock(OrderDetail $orderDetail)
     {
         $variant = $orderDetail->variation;
         if ($orderDetail->variation == null) {
@@ -1254,7 +1236,7 @@ if (!function_exists('product_restock')) {
 
 //Commission Calculation
 if (!function_exists('calculateCommissionAffilationClubPoint')) {
-    function calculateCommissionAffilationClubPoint($order)
+    function calculateCommissionAffilationClubPoint(mixed $order)
     {
         (new CommissionController)->calculateCommission($order);
 
@@ -1275,7 +1257,7 @@ if (!function_exists('calculateCommissionAffilationClubPoint')) {
 
 // Addon Activation Check
 if (!function_exists('addon_is_activated')) {
-    function addon_is_activated($identifier, $default = null)
+    function addon_is_activated(string $identifier, mixed $default = null)
     {
         $addons = Cache::remember('addons', 86400, function () {
             return Addon::all();
@@ -1288,7 +1270,7 @@ if (!function_exists('addon_is_activated')) {
 
 // Addon Activation Check
 if (!function_exists('seller_package_validity_check')) {
-    function seller_package_validity_check($user_id = null)
+    function seller_package_validity_check(int|string|null $user_id = null)
     {
         $user = $user_id == null ? \App\Models\User::find(Auth::user()->id) : \App\Models\User::find($user_id);
         $shop = $user->shop;
@@ -1309,7 +1291,7 @@ if (!function_exists('seller_package_validity_check')) {
 
 // Get URL params
 if (!function_exists('get_url_params')) {
-    function get_url_params($url, $key)
+    function get_url_params(string $url, string $key)
     {
         $query_str = parse_url($url, PHP_URL_QUERY);
         parse_str($query_str, $query_params);

@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Api\V2;
 use App\Models\CombinedOrder;
 use App\Models\User;
 use Exception;
-use Rave as Flutterwave;
 use Illuminate\Http\Request;
-
+use KingFlamez\Rave\Facades\Rave as Flutterwave;
 
 class FlutterwaveController extends Controller
 {
@@ -36,7 +35,7 @@ class FlutterwaveController extends Controller
         }
     }
 
-    public function initialize($payment_type, $combined_order_id, $amount, $user_id, $package_id = 0)
+    public function initialize(string $payment_type, int $combined_order_id, float|int|string $amount, int $user_id, int $package_id = 0)
     {
         $user = User::find($user_id);
         //This generates a payment reference
@@ -48,7 +47,7 @@ class FlutterwaveController extends Controller
             'amount' => $amount,
             'email' => $user->email,
             'tx_ref' => $reference,
-            'currency' => env('FLW_PAYMENT_CURRENCY_CODE'),
+            'currency' => 'USD',
             'redirect_url' => route(
                 'api.flutterwave.callback',
                 [

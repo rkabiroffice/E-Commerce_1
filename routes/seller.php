@@ -1,6 +1,25 @@
 <?php
 
+use App\Http\Controllers\Seller\AddressController;
 use App\Http\Controllers\AizUploadController;
+use App\Http\Controllers\Seller\ConversationController;
+use App\Http\Controllers\Seller\CouponController;
+use App\Http\Controllers\Seller\DigitalProductController;
+use App\Http\Controllers\Seller\InvoiceController;
+use App\Http\Controllers\Seller\NotificationController;
+use App\Http\Controllers\Seller\OrderController;
+use App\Http\Controllers\Seller\PaymentController;
+use App\Http\Controllers\Seller\ProductBulkUploadController;
+use App\Http\Controllers\Seller\ProductController;
+use App\Http\Controllers\Seller\ProductQueryController;
+use App\Http\Controllers\Seller\ProfileController;
+use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\CommissionHistoryController;
+use App\Http\Controllers\Seller\DashboardController;
+use App\Http\Controllers\Seller\SellerWithdrawRequestController;
+use App\Http\Controllers\Seller\ShopController;
+use App\Http\Controllers\Seller\SupportTicketController;
+use Illuminate\Support\Facades\Route;
 
 //Upload
 Route::group(['prefix' => 'seller', 'middleware' => ['seller', 'verified', 'user'], 'as' => 'seller.'], function () {
@@ -17,8 +36,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Seller', 'prefix' => 'seller'
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
     });
-    
-    // Product 
+
+    // Product
     Route::controller(ProductController::class)->group(function () {
         Route::get('/products', 'index')->name('products');
         Route::get('/product/create', 'create')->name('products.create');
@@ -56,7 +75,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Seller', 'prefix' => 'seller'
     });
 
     //Coupon
-    Route::resource('coupon', CouponController::class);
+    Route::resource('coupon',CouponController::class);
     Route::controller(CouponController::class)->group(function () {
         Route::post('/coupon/get_form', 'get_coupon_form')->name('coupon.get_coupon_form');
         Route::post('/coupon/get_form_edit', 'get_coupon_form_edit')->name('coupon.get_coupon_form_edit');
@@ -118,7 +137,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Seller', 'prefix' => 'seller'
         Route::get('/commission-history', 'index')->name('commission-history.index');
     });
 
-    //Conversations 
+    //Conversations
     Route::controller(ConversationController::class)->group(function () {
         Route::get('/conversations', 'index')->name('conversations.index');
         Route::get('/conversations/show/{id}', 'show')->name('conversations.show');

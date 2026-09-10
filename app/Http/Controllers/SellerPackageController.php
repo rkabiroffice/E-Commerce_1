@@ -7,9 +7,9 @@ use App\Models\SellerPackage;
 use App\Models\SellerPackageTranslation;
 use App\Models\SellerPackagePayment;
 use App\Models\Shop;
-use Artisan;
-use Auth;
-use Session;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
 class SellerPackageController extends Controller
@@ -88,7 +88,7 @@ class SellerPackageController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang   = $request->lang;
         $seller_package = SellerPackage::findOrFail($id);
@@ -180,7 +180,7 @@ class SellerPackageController extends Controller
         }
     }
 
-    public function purchase_payment_done($payment_data, $payment)
+    public function purchase_payment_done(array $payment_data, mixed $payment)
     {
         $seller = Auth::user()->shop;
         $seller->seller_package_id = Session::get('payment_data')['seller_package_id'];

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Seller;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Brand;
-use Auth;
+
 use App\Models\ProductsImport;
-use PDF;
-use Excel;
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Auth;
 
 class ProductBulkUploadController extends Controller
 {
@@ -27,7 +28,7 @@ class ProductBulkUploadController extends Controller
     {
         $categories = Category::all();
 
-        return PDF::loadView('backend.downloads.category',[
+        return Pdf::loadView('backend.downloads.category', [
             'categories' => $categories,
         ], [], [])->download('category.pdf');
     }
@@ -36,7 +37,7 @@ class ProductBulkUploadController extends Controller
     {
         $brands = Brand::all();
 
-        return PDF::loadView('backend.downloads.brand',[
+        return Pdf::loadView('backend.downloads.brand', [
             'brands' => $brands,
         ], [], [])->download('brands.pdf');
     }
@@ -47,7 +48,7 @@ class ProductBulkUploadController extends Controller
             $import = new ProductsImport;
             Excel::import($import, request()->file('bulk_file'));
         }
-        
+
         return back();
     }
 

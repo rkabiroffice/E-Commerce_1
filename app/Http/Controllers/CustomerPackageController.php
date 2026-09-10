@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\CustomerPackage;
 use App\Models\CustomerPackageTranslation;
 use App\Models\CustomerPackagePayment;
-use Auth;
-use Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use App\Models\User;
 
 class CustomerPackageController extends Controller
@@ -82,7 +82,7 @@ class CustomerPackageController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang = $request->lang;
         $customer_package = CustomerPackage::findOrFail($id);
@@ -160,7 +160,7 @@ class CustomerPackageController extends Controller
         }
     }
 
-    public function purchase_payment_done($payment_data, $payment)
+    public function purchase_payment_done(array $payment_data, mixed $payment)
     {
         $user = User::findOrFail(Auth::user()->id);
         $user->customer_package_id = $payment_data['customer_package_id'];

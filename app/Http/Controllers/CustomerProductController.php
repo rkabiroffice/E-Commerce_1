@@ -7,7 +7,8 @@ use App\Models\CustomerProduct;
 use App\Models\CustomerProductTranslation;
 use App\Models\Category;
 use App\Models\Brand;
-use Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Utility\CategoryUtility;
 
@@ -100,8 +101,10 @@ class CustomerProductController extends Controller
         $customer_product->slug                 = strtolower(preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $request->name)).'-'.Str::random(5));
         if($customer_product->save()){
             $user = Auth::user();
-            $user->remaining_uploads -= 1;
-            $user->save();
+            if ($user instanceof User) {
+                $user->remaining_uploads -= 1;
+                $user->save();
+            }
 
             $customer_product_translation               = CustomerProductTranslation::firstOrNew(['lang' => env('DEFAULT_LANGUAGE'), 'customer_product_id' => $customer_product->id]);
             $customer_product_translation->name         = $request->name;
@@ -135,7 +138,7 @@ class CustomerProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $categories = Category::where('parent_id', 0)
             ->where('digital', 0)
@@ -209,7 +212,7 @@ class CustomerProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         $product = CustomerProduct::findOrFail($id);
         $product->customer_product_translations()->delete();
@@ -220,7 +223,7 @@ class CustomerProductController extends Controller
         }
     }
 
-    public function destroy_by_admin($id)
+    public function destroy_by_admin(int|string $id)
     {
         $product = CustomerProduct::findOrFail($id);
         $product->customer_product_translations()->delete();
@@ -255,7 +258,7 @@ class CustomerProductController extends Controller
         return $this->search($request);
     }
 
-    public function customer_product($slug)
+    public function customer_product(string $slug)
     {
         $customer_product  = CustomerProduct::where('slug', $slug)->first();
         if($customer_product!=null){

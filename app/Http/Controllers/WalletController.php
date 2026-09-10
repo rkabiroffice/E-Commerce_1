@@ -1,10 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Wallet;
-use Auth;
-use Session;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class WalletController extends Controller
 {
@@ -36,9 +37,15 @@ class WalletController extends Controller
         }
     }
 
-    public function wallet_payment_done($payment_data, $payment_details)
+    public function wallet_payment_done(array $payment_data, mixed $payment_details)
     {
+        /** @var User $user */
         $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
         $user->balance = $user->balance + $payment_data['amount'];
         $user->save();
 

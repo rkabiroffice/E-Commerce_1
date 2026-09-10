@@ -12,6 +12,7 @@
 */
 
 use App\Http\Controllers\PosController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(PosController::class)->group(function () {
 	Route::get('/pos/products', 'search')->name('pos.search_product');

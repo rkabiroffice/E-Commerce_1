@@ -14,13 +14,14 @@
 
 //Admin
 
-use App\Http\Controllers\DeliveryBoyController;
+use App\Http\Controllers\Api\V2\DeliveryBoyController;
 use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function(){
     //Delivery Boy
     Route::resource('delivery-boys', DeliveryBoyController::class);
-    
+
     Route::controller(DeliveryBoyController::class)->group(function () {
         Route::get('/delivery-boy/ban/{id}', 'ban')->name('delivery-boy.ban');
         Route::get('/delivery-boy-configuration', 'delivery_boy_configure')->name('delivery-boy-configuration');
@@ -31,7 +32,7 @@ Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function()
         Route::get('/delivery-boys-payment-histories', 'delivery_boys_payment_histories')->name('delivery-boys-payment-histories');
         Route::get('/delivery-boys-collection-histories', 'delivery_boys_collection_histories')->name('delivery-boys-collection-histories');
         Route::get('/delivery-boy/cancel-request', 'cancel_request_list')->name('delivery-boy.cancel-request');
-        
+
     });
 });
 
@@ -56,5 +57,5 @@ Route::group(['middleware' => ['user', 'verified', 'unbanned']], function() {
     Route::controller(DeliveryBoyController::class)->group(function () {
         Route::get('/delivery-boy/order-detail/{id}', 'order_detail')->name('delivery-boy.order-detail');
     });
-    
+
 });

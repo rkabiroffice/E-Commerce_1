@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Payment;
 
-use Auth;
-use Session;
-use Paystack;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Unicodeveloper\Paystack\Facades\Paystack;
 use App\Models\CombinedOrder;
 use App\Models\SellerPackage;
 use App\Models\CustomerPackage;
@@ -29,22 +29,26 @@ class PaystackController extends Controller
 
             $combined_order = CombinedOrder::findOrFail(Session::get('combined_order_id'));
             $user = Auth::user();
-            $request->email = $user->email;
-            $request->amount = round($combined_order->grand_total * 100);
-            $request->currency = env('PAYSTACK_CURRENCY_CODE', 'NGN');
-            $request->metadata = json_encode($array);
-            $request->reference = Paystack::genTranxRef();
+            $request->merge([
+                'email' => $user->email,
+                'amount' => round($combined_order->grand_total * 100),
+                'currency' => 'NGN',
+                'metadata' => json_encode($array),
+                'reference' => Paystack::genTranxRef(),
+            ]);
             return Paystack::getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'wallet_payment') {
             $post_data['payment_method'] = Session::get('payment_data')['payment_method'];
             $array = ['custom_fields' => $post_data];
 
             $user = Auth::user();
-            $request->email = $user->email;
-            $request->amount = round(Session::get('payment_data')['amount'] * 100);
-            $request->currency = env('PAYSTACK_CURRENCY_CODE', 'NGN');
-            $request->metadata = json_encode($array);
-            $request->reference = Paystack::genTranxRef();
+            $request->merge([
+                'email' => $user->email,
+                'amount' => round(Session::get('payment_data')['amount'] * 100),
+                'currency' => 'NGN',
+                'metadata' => json_encode($array),
+                'reference' => Paystack::genTranxRef(),
+            ]);
             return Paystack::getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'customer_package_payment') {
             $post_data['customer_package_id'] = Session::get('payment_data')['customer_package_id'];
@@ -52,11 +56,13 @@ class PaystackController extends Controller
 
             $customer_package = CustomerPackage::findOrFail(Session::get('payment_data')['customer_package_id']);
             $user = Auth::user();
-            $request->email = $user->email;
-            $request->amount = round($customer_package->amount * 100);
-            $request->currency = env('PAYSTACK_CURRENCY_CODE', 'NGN');
-            $request->metadata = json_encode($array);
-            $request->reference = Paystack::genTranxRef();
+            $request->merge([
+                'email' => $user->email,
+                'amount' => round($customer_package->amount * 100),
+                'currency' => 'NGN',
+                'metadata' => json_encode($array),
+                'reference' => Paystack::genTranxRef(),
+            ]);
             return Paystack::getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'seller_package_payment') {
             $post_data['seller_package_id'] = Session::get('payment_data')['seller_package_id'];
@@ -65,11 +71,13 @@ class PaystackController extends Controller
 
             $seller_package = SellerPackage::findOrFail(Session::get('payment_data')['seller_package_id']);
             $user = Auth::user();
-            $request->email = $user->email;
-            $request->amount = round($seller_package->amount * 100);
-            $request->currency = env('PAYSTACK_CURRENCY_CODE', 'NGN');
-            $request->metadata = json_encode($array);
-            $request->reference = Paystack::genTranxRef();
+            $request->merge([
+                'email' => $user->email,
+                'amount' => round($seller_package->amount * 100),
+                'currency' => 'NGN',
+                'metadata' => json_encode($array),
+                'reference' => Paystack::genTranxRef(),
+            ]);
             return Paystack::getAuthorizationUrl()->redirectNow();
         }
     }

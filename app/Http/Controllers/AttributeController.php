@@ -7,8 +7,8 @@ use App\Models\Attribute;
 use App\Models\Color;
 use App\Models\AttributeTranslation;
 use App\Models\AttributeValue;
-use CoreComponentRepository;
-use Str;
+use MehediIitdu\CoreComponentRepository\CoreComponentRepository;
+use Illuminate\Support\Str;
 
 class AttributeController extends Controller
 {
@@ -75,7 +75,7 @@ class AttributeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $data['attribute'] = Attribute::findOrFail($id);
         $data['all_attribute_values'] = AttributeValue::with('attribute')->where('attribute_id', $id)->get();
@@ -91,7 +91,7 @@ class AttributeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang      = $request->lang;
         $attribute = Attribute::findOrFail($id);
@@ -105,7 +105,7 @@ class AttributeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
         $attribute = Attribute::findOrFail($id);
         if($request->lang == env("DEFAULT_LANGUAGE")){
@@ -127,7 +127,7 @@ class AttributeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         $attribute = Attribute::findOrFail($id);
 
@@ -152,35 +152,35 @@ class AttributeController extends Controller
         return redirect()->route('attributes.show', $request->attribute_id);
     }
 
-    public function edit_attribute_value(Request $request, $id)
+    public function edit_attribute_value(Request $request, int|string $id)
     {
         $attribute_value = AttributeValue::findOrFail($id);
         return view("backend.product.attribute.attribute_value.edit", compact('attribute_value'));
     }
 
-    public function update_attribute_value(Request $request, $id)
+    public function update_attribute_value(Request $request, int|string $id)
     {
         $attribute_value = AttributeValue::findOrFail($id);
-        
+
         $attribute_value->attribute_id = $request->attribute_id;
         $attribute_value->value = ucfirst($request->value);
-        
+
         $attribute_value->save();
 
         flash(translate('Attribute value has been updated successfully'))->success();
         return back();
     }
 
-    public function destroy_attribute_value($id)
+    public function destroy_attribute_value(int|string $id)
     {
         $attribute_values = AttributeValue::findOrFail($id);
         AttributeValue::destroy($id);
-        
+
         flash(translate('Attribute value has been deleted successfully'))->success();
         return redirect()->route('attributes.show', $attribute_values->attribute_id);
 
     }
-    
+
     public function colors(Request $request) {
         $sort_search = null;
         $colors = Color::orderBy('created_at', 'desc');
@@ -193,7 +193,7 @@ class AttributeController extends Controller
 
         return view('backend.product.color.index', compact('colors', 'sort_search'));
     }
-    
+
     public function store_color(Request $request) {
         $request->validate([
             'name' => 'required',
@@ -202,14 +202,14 @@ class AttributeController extends Controller
         $color = new Color;
         $color->name = Str::replace(' ', '', $request->name);
         $color->code = $request->code;
-        
+
         $color->save();
 
         flash(translate('Color has been inserted successfully'))->success();
         return redirect()->route('colors');
     }
-    
-    public function edit_color(Request $request, $id)
+
+    public function edit_color(Request $request, int|string $id)
     {
         $color = Color::findOrFail($id);
         return view('backend.product.color.edit', compact('color'));
@@ -222,30 +222,30 @@ class AttributeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update_color(Request $request, $id)
+    public function update_color(Request $request, int|string $id)
     {
         $color = Color::findOrFail($id);
 
         $request->validate([
             'code' => 'required|unique:colors,code,'.$color->id,
         ]);
-        
+
         $color->name = Str::replace(' ', '', $request->name);
         $color->code = $request->code;
-        
+
         $color->save();
 
         flash(translate('Color has been updated successfully'))->success();
         return back();
     }
-    
-    public function destroy_color($id)
+
+    public function destroy_color(int|string $id)
     {
         Color::destroy($id);
-        
+
         flash(translate('Color has been deleted successfully'))->success();
         return redirect()->route('colors');
 
     }
-    
+
 }

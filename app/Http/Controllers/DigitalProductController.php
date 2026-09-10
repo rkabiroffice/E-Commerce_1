@@ -10,7 +10,7 @@ use App\Models\ProductTax;
 use App\Models\ProductTranslation;
 use App\Models\Upload;
 use App\Services\ProductTaxService;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class DigitalProductController extends Controller
 {
@@ -143,7 +143,7 @@ class DigitalProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $lang = $request->lang;
         $product = Product::findOrFail($id);
@@ -256,12 +256,8 @@ class DigitalProductController extends Controller
         $product = Product::findOrFail(decrypt($request->id));
 
         $upload = Upload::findOrFail($product->file_name);
-        if (env('FILESYSTEM_DRIVER') == "s3") {
-            return \Storage::disk('s3')->download($upload->file_name, $upload->file_original_name . "." . $upload->extension);
-        } else {
-            if (file_exists(base_path('public/' . $upload->file_name))) {
-                return response()->download(base_path('public/' . $upload->file_name));
-            }
+        if (file_exists(base_path('public/' . $upload->file_name))) {
+            return response()->download(base_path('public/' . $upload->file_name));
         }
     }
 }

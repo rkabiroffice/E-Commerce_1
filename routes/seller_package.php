@@ -12,6 +12,7 @@
 */
 
 use App\Http\Controllers\SellerPackageController;
+use Illuminate\Support\Facades\Route;
 
 //Admin
 Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function(){

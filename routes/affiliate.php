@@ -14,6 +14,7 @@
 //Admin
 
 use App\Http\Controllers\AffiliateController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function(){
     Route::controller(AffiliateController::class)->group(function () {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V2\CustomerPackageController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function() {
     Route::post('login', 'App\Http\Controllers\Api\V2\AuthController@login');
@@ -52,12 +53,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
         Route::get('purchase-history', 'App\Http\Controllers\Api\V2\PurchaseHistoryController@index')->middleware('auth:sanctum');
         Route::get('purchase-history-details/{id}', 'App\Http\Controllers\Api\V2\PurchaseHistoryController@details')->middleware('auth:sanctum');
         Route::get('purchase-history-items/{id}', 'App\Http\Controllers\Api\V2\PurchaseHistoryController@items')->middleware('auth:sanctum');
-        
+
         Route::prefix('classified')->group(function () {
             Route::get('/own-products', 'App\Http\Controllers\Api\V2\CustomerProductController@ownProducts')->middleware('auth:sanctum');
             Route::delete('/delete/{id}', 'App\Http\Controllers\Api\V2\CustomerProductController@delete')->middleware('auth:sanctum');
             Route::post('/change-status/{id}', 'App\Http\Controllers\Api\V2\CustomerProductController@changeStatus')->middleware('auth:sanctum');
-            
+
         });
 
         Route::get('customer/info', 'App\Http\Controllers\Api\V2\CustomerController@show')->middleware('auth:sanctum');
@@ -109,19 +110,19 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
 
         Route::get('refund-request/get-list', 'App\Http\Controllers\Api\V2\RefundRequestController@get_list')->middleware('auth:sanctum');
         Route::post('refund-request/send', 'App\Http\Controllers\Api\V2\RefundRequestController@send')->middleware('auth:sanctum');
-        
+
         Route::get('bkash/begin', 'App\Http\Controllers\Api\V2\BkashController@begin')->middleware('auth:sanctum');
         Route::get('nagad/begin', 'App\Http\Controllers\Api\V2\NagadController@begin')->middleware('auth:sanctum');
         Route::post('payments/pay/wallet', 'App\Http\Controllers\Api\V2\WalletController@processPayment')->middleware('auth:sanctum');
         Route::post('payments/pay/cod', 'App\Http\Controllers\Api\V2\PaymentController@cashOnDelivery')->middleware('auth:sanctum');
         Route::post('payments/pay/manual', 'App\Http\Controllers\Api\V2\PaymentController@manualPayment')->middleware('auth:sanctum');
-        
+
         Route::post('order/store', 'App\Http\Controllers\Api\V2\OrderController@store')->middleware('auth:sanctum');
 
         Route::get('profile/counters', 'App\Http\Controllers\Api\V2\ProfileController@counters')->middleware('auth:sanctum');
 
         Route::post('profile/update', 'App\Http\Controllers\Api\V2\ProfileController@update')->middleware('auth:sanctum');
-        
+
         Route::post('profile/update-device-token', 'App\Http\Controllers\Api\V2\ProfileController@update_device_token')->middleware('auth:sanctum');
         Route::post('profile/update-image', 'App\Http\Controllers\Api\V2\ProfileController@updateImage')->middleware('auth:sanctum');
         Route::post('profile/image-upload', 'App\Http\Controllers\Api\V2\ProfileController@imageUpload')->middleware('auth:sanctum');
@@ -197,7 +198,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::get('products/digital', 'App\Http\Controllers\Api\V2\ProductController@digital')->name('products.digital');
     Route::apiResource('products', 'App\Http\Controllers\Api\V2\ProductController')->except(['store', 'update', 'destroy']);
 
-        
+
 
 
 
@@ -205,7 +206,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
         Route::get("customer-packages","customer_packages_list");
     });
 
-    
+
 
     Route::get('reviews/product/{id}', 'App\Http\Controllers\Api\V2\ReviewController@index')->name('api.reviews.index');
 
@@ -231,7 +232,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
 
     // Route::get('user/info/{id}', 'App\Http\Controllers\Api\V2\UserController@info')->middleware('auth:sanctum');
     // Route::post('user/info/update', 'App\Http\Controllers\Api\V2\UserController@updateName')->middleware('auth:sanctum');
-   
+
     Route::post('get-user-by-access_token', 'App\Http\Controllers\Api\V2\UserController@getUserInfoByAccessToken');
 
     Route::get('cities', 'App\Http\Controllers\Api\V2\AddressController@getCities');
@@ -266,7 +267,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::any('iyzico/callback', 'App\Http\Controllers\Api\V2\IyzicoController@callback')->name('api.iyzico.callback');
     Route::post('iyzico/success', 'App\Http\Controllers\Api\V2\IyzicoController@success')->name('api.iyzico.success');
 
-    
+
     Route::get('bkash/api/webpage/{token}/{amount}', 'App\Http\Controllers\Api\V2\BkashController@webpage')->name('api.bkash.webpage');
     Route::any('bkash/api/checkout/{token}/{amount}', 'App\Http\Controllers\Api\V2\BkashController@checkout')->name('api.bkash.checkout');
     Route::any('bkash/api/execute/{token}', 'App\Http\Controllers\Api\V2\BkashController@execute')->name('api.bkash.execute');
@@ -274,7 +275,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::any('bkash/api/success', 'App\Http\Controllers\Api\V2\BkashController@success')->name('api.bkash.success');
     Route::post('bkash/api/process', 'App\Http\Controllers\Api\V2\BkashController@process')->name('api.bkash.process');
 
-    
+
     Route::any('nagad/verify/{payment_type}', 'App\Http\Controllers\Api\V2\NagadController@verify')->name('app.nagad.callback_url');
     Route::post('nagad/process', 'App\Http\Controllers\Api\V2\NagadController@process');
 
@@ -293,7 +294,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
 
     Route::post('offline/payment/submit', 'App\Http\Controllers\Api\V2\OfflinePaymentController@submit')->name('api.offline.payment.submit');
 
- 
+
     Route::get('flash-deals', 'App\Http\Controllers\Api\V2\FlashDealController@index');
     Route::get('flash-deal-products/{id}', 'App\Http\Controllers\Api\V2\FlashDealController@products');
 
@@ -301,7 +302,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function() {
     Route::get('addon-list', 'App\Http\Controllers\Api\V2\ConfigController@addon_list');
     //Activated social login list
     Route::get('activated-social-login', 'App\Http\Controllers\Api\V2\ConfigController@activated_social_login');
-    
+
     //Business Sttings list
     Route::post('business-settings', 'App\Http\Controllers\Api\V2\ConfigController@business_settings');
     //Pickup Point list

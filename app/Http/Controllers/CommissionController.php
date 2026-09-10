@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\SellerWithdrawRequest;
 use App\Models\Payment;
 use App\Models\Shop;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 class CommissionController extends Controller
 {
@@ -57,7 +57,8 @@ class CommissionController extends Controller
     }
 
     //redirects to this method after successfull seller payment
-    public function seller_payment_done($payment_data, $payment_details){
+    public function seller_payment_done(array $payment_data, mixed $payment_details)
+    {
         $shop = Shop::findOrFail($payment_data['shop_id']);
         $shop->admin_to_pay = $shop->admin_to_pay - $payment_data['amount'];
         $shop->save();
@@ -91,13 +92,14 @@ class CommissionController extends Controller
     }
 
     //calculate seller commission after payment
-    public function calculateCommission($order){
+    public function calculateCommission(mixed $order)
+    {
         if ($order->payment_type == 'cash_on_delivery') {
             foreach ($order->orderDetails as $orderDetail) {
                 $orderDetail->payment_status = 'paid';
                 $orderDetail->save();
                 $commission_percentage = 0;
-                
+
                 if(get_setting('vendor_commission_activation')){
                     if (get_setting('category_wise_commission')) {
                         $commission_percentage = $orderDetail->product->category->commision_rate;

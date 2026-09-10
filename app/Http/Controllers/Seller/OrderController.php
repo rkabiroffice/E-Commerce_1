@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Seller;
 
+use App\Http\Controllers\Api\V2\DeliveryBoyController;
 use App\Models\Order;
 use App\Models\ProductStock;
 use App\Models\SmsTemplate;
@@ -9,8 +10,8 @@ use App\Models\User;
 use App\Utility\NotificationUtility;
 use App\Utility\SmsUtility;
 use Illuminate\Http\Request;
-use Auth;
-use DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -54,7 +55,7 @@ class OrderController extends Controller
         return view('seller.orders.index', compact('orders', 'payment_status', 'delivery_status', 'sort_search'));
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         $order = Order::findOrFail(decrypt($id));
         $order_shipping_address = json_decode($order->shipping_address);
@@ -81,7 +82,7 @@ class OrderController extends Controller
             $user->save();
         }
 
-        
+
         foreach ($order->orderDetails->where('seller_id', Auth::user()->id) as $key => $orderDetail) {
             $orderDetail->delivery_status = $request->status;
             $orderDetail->save();
@@ -114,16 +115,17 @@ class OrderController extends Controller
         //sends Notifications to user
         NotificationUtility::sendNotification($order, $request->status);
         if (get_setting('google_firebase') == 1 && $order->user->device_token != null) {
-            $request->device_token = $order->user->device_token;
-            $request->title = "Order updated !";
+            $firebasePayload = new \stdClass();
+            $firebasePayload->device_token = $order->user->device_token;
+            $firebasePayload->title = "Order updated !";
             $status = str_replace("_", "", $order->delivery_status);
-            $request->text = " Your order {$order->code} has been {$status}";
+            $firebasePayload->text = " Your order {$order->code} has been {$status}";
 
-            $request->type = "order";
-            $request->id = $order->id;
-            $request->user_id = $order->user->id;
+            $firebasePayload->type = "order";
+            $firebasePayload->id = $order->id;
+            $firebasePayload->user_id = $order->user->id;
 
-            NotificationUtility::sendFirebaseNotification($request);
+            NotificationUtility::sendFirebaseNotification($firebasePayload);
         }
 
 
@@ -148,7 +150,7 @@ class OrderController extends Controller
             $orderDetail->payment_status = $request->status;
             $orderDetail->save();
         }
-        
+
         $status = 'paid';
         foreach ($order->orderDetails as $key => $orderDetail) {
             if ($orderDetail->payment_status != 'paid') {
@@ -166,16 +168,17 @@ class OrderController extends Controller
         //sends Notifications to user
         NotificationUtility::sendNotification($order, $request->status);
         if (get_setting('google_firebase') == 1 && $order->user->device_token != null) {
-            $request->device_token = $order->user->device_token;
-            $request->title = "Order updated !";
+            $firebasePayload = new \stdClass();
+            $firebasePayload->device_token = $order->user->device_token;
+            $firebasePayload->title = "Order updated !";
             $status = str_replace("_", "", $order->payment_status);
-            $request->text = " Your order {$order->code} has been {$status}";
+            $firebasePayload->text = " Your order {$order->code} has been {$status}";
 
-            $request->type = "order";
-            $request->id = $order->id;
-            $request->user_id = $order->user->id;
+            $firebasePayload->type = "order";
+            $firebasePayload->id = $order->id;
+            $firebasePayload->user_id = $order->user->id;
 
-            NotificationUtility::sendFirebaseNotification($request);
+            NotificationUtility::sendFirebaseNotification($firebasePayload);
         }
 
 

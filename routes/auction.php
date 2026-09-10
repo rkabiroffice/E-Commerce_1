@@ -15,6 +15,7 @@ use App\Http\Controllers\AuctionProductController;
 use App\Http\Controllers\AuctionProductBidController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
+use Illuminate\Support\Facades\Route;
 
 //Admin
 Route::group(['prefix' =>'admin', 'middleware' => ['auth', 'admin']], function(){

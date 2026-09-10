@@ -10,7 +10,7 @@ use App\Models\ProductTax;
 use App\Models\ProductTranslation;
 use App\Models\Upload;
 use App\Services\ProductTaxService;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class DigitalProductController  extends Controller
 {
@@ -100,7 +100,7 @@ class DigitalProductController  extends Controller
                     'tax_id', 'tax', 'tax_type', 'product_id'
                 ]));
             }
-            
+
             $product_stock              = new ProductStock;
             $product_stock->product_id  = $product->id;
             $product_stock->variant     = '';
@@ -130,7 +130,7 @@ class DigitalProductController  extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int|string $id)
     {
         $categories = Category::where('digital', 1)->get();
         $lang = $request->lang;
@@ -186,7 +186,7 @@ class DigitalProductController  extends Controller
         foreach ($product->stocks as $key => $stock) {
             $stock->delete();
         }
-        
+
         if($product->save()){
             $request->merge(['product_id' => $product->id]);
             //VAT & Tax
@@ -204,7 +204,7 @@ class DigitalProductController  extends Controller
             $product_stock->sku         = '';
             $product_stock->qty         = 0;
             $product_stock->save();
-            
+
             // Product Translations
             $product_translation                = ProductTranslation::firstOrNew(['lang' => $request->lang, 'product_id' => $product->id]);
             $product_translation->name          = $request->name;
@@ -249,13 +249,8 @@ class DigitalProductController  extends Controller
         $product = Product::findOrFail(decrypt($request->id));
         if(Auth::user()->id == $product->user_id){
             $upload = Upload::findOrFail($product->file_name);
-            if (env('FILESYSTEM_DRIVER') == "s3") {
-                return \Storage::disk('s3')->download($upload->file_name, $upload->file_original_name.".".$upload->extension);
-            }
-            else {
-                if (file_exists(base_path('public/'.$upload->file_name))) {
-                    return response()->download(base_path('public/'.$upload->file_name));
-                }
+            if (file_exists(base_path('public/'.$upload->file_name))) {
+                return response()->download(base_path('public/'.$upload->file_name));
             }
         }
         else {

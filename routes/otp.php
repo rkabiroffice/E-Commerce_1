@@ -15,13 +15,14 @@ use App\Http\Controllers\OTPVerificationController;
 use App\Http\Controllers\OTPController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\SmsTemplateController;
+use Illuminate\Support\Facades\Route;
 
 //Verofocation phone
 Route::controller(OTPVerificationController::class)->group(function () {
     Route::get('/verification', 'verification')->name('verification');
     Route::post('/verification', 'verify_phone')->name('verification.submit');
     Route::get('/verification/phone/code/resend', 'resend_verificcation_code')->name('verification.phone.resend');
-    
+
     //Forgot password phone
     Route::get('/password/phone/reset', 'show_reset_password_form')->name('password.phone.form');
     Route::post('/password/reset/submit', 'reset_password_with_code')->name('password.update.phone');

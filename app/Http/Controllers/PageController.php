@@ -86,7 +86,7 @@ class PageController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-   public function edit(Request $request, $id)
+   public function edit(Request $request, int|string $id)
    {
         $lang = $request->lang;
         $page_name = $request->page;
@@ -158,14 +158,14 @@ class PageController extends Controller
         return back();
     }
 
-    public function show_custom_page($slug){
+    public function show_custom_page(string $slug){
         $page = Page::where('slug', $slug)->first();
         if($page != null){
             return view('frontend.custom_page', compact('page'));
         }
         abort(404);
     }
-    public function mobile_custom_page($slug){
+    public function mobile_custom_page(string $slug){
         $page = Page::where('slug', $slug)->first();
         if($page != null){
             return view('frontend.m_custom_page', compact('page'));
