@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\OTPVerificationController;
 use App\Http\Resources\V2\PurchaseHistoryMiniCollection;
 use App\Http\Resources\V2\DeliveryBoyPurchaseHistoryMiniCollection;
@@ -26,11 +27,10 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of assigned delivery by the admin.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
 
-    public function dashboard_summary($id)
+    public function dashboard_summary(int $id)
     {
         $order_query = Order::query();
         $order_query->where('assign_delivery_boy', $id);
@@ -65,7 +65,7 @@ class DeliveryBoyController extends Controller
         ]);
     }
 
-    public function assigned_delivery($id)
+    public function assigned_delivery(int $id)
     {
 //        $order_query = Order::query();
 //        $order_query->where('delivery_status', 'pending');
@@ -88,10 +88,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of pickup delivery by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function picked_up_delivery($id)
+    public function picked_up_delivery(int $id)
     {
         $order_query = Order::query();
         $order_query->where('delivery_status', 'picked_up');
@@ -103,10 +102,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of pickup delivery by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function on_the_way_delivery($id)
+    public function on_the_way_delivery(int $id)
     {
         $order_query = Order::query();
         $order_query->where('delivery_status', 'on_the_way');
@@ -118,10 +116,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of completed delivery by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function completed_delivery($id)
+    public function completed_delivery(int $id)
     {
         $order_query = Order::query();
         $order_query->where('delivery_status', 'delivered');
@@ -160,10 +157,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of pending delivery by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function pending_delivery($id)
+    public function pending_delivery(int $id)
     {
         $order_query = Order::query();
         $order_query->where('delivery_status', '!=', 'delivered');
@@ -176,10 +172,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of cancelled delivery by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function cancelled_delivery($id)
+    public function cancelled_delivery(int $id)
     {
         $order_query = Order::query();
         $order_query->where('delivery_status', 'cancelled');
@@ -216,10 +211,9 @@ class DeliveryBoyController extends Controller
     /**
      * Show the list of today's collection by the delivery boy.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function collection($id)
+    public function collection(int $id)
     {
         $collection_query = DeliveryHistory::query();
         $collection_query->where('delivery_status', 'delivered');
@@ -228,7 +222,7 @@ class DeliveryBoyController extends Controller
         return new DeliveryHistoryCollection($collection_query->where('delivery_boy_id', $id)->latest()->paginate(10));
     }
 
-    public function earning($id)
+    public function earning(int $id)
     {
         $collection_query = DeliveryHistory::query();
         $collection_query->where('delivery_status', 'delivered');
@@ -236,7 +230,7 @@ class DeliveryBoyController extends Controller
         return new DeliveryHistoryCollection($collection_query->where('delivery_boy_id', $id)->latest()->paginate(10));
     }
 
-    public function collection_summary($id)
+    public function collection_summary(int $id)
     {
         $collection_query = DeliveryHistory::query();
         $collection_query->where('delivery_status', 'delivered');
@@ -271,7 +265,7 @@ class DeliveryBoyController extends Controller
         ]);
     }
 
-    public function earning_summary($id)
+    public function earning_summary(int $id)
     {
         $collection_query = DeliveryHistory::query();
         $collection_query->where('delivery_status', 'delivered');
@@ -308,7 +302,6 @@ class DeliveryBoyController extends Controller
      * For only delivery boy while changing delivery status.
      * Call from order controller
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function change_delivery_status(Request $request) {
@@ -384,7 +377,7 @@ class DeliveryBoyController extends Controller
         ]);
     }
 
-    public function cancel_request($id)
+    public function cancel_request(int $id)
     {
         $order =  Order::find($id);
 
@@ -398,16 +391,16 @@ class DeliveryBoyController extends Controller
         ]);
     }
 
-    public function details($id)
+    public function details(int $id)
     {
         $order_detail = Order::where('id', $id)->where('assign_delivery_boy', auth()->user()->id)->get();
         // $order_query = auth()->user()->orders->where('id', $id);
-        
+
         // return new PurchaseHistoryCollection($order_query->get());
         return new PurchaseHistoryCollection($order_detail);
     }
 
-    public function items($id)
+    public function items(int $id)
     {
         $order_id = Order::select('id')->where('id', $id)->where('assign_delivery_boy', auth()->user()->id)->first();
         $order_query = OrderDetail::where('order_id', $order_id->id);

@@ -10,7 +10,8 @@ use App\Models\Message;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Mail;
+use Illuminate\Support\Facades\Mail;
+
 
 class ChatController extends Controller
 {
@@ -21,7 +22,7 @@ class ChatController extends Controller
         return new ConversationCollection($conversations);
     }
 
-    public function messages($id)
+    public function messages(int $id)
     {
         $messages = Message::where('conversation_id', $id)->latest('id')->paginate(10);
         return new MessageCollection($messages);
@@ -45,7 +46,7 @@ class ChatController extends Controller
         return new MessageCollection($messages);
     }
 
-    public function get_new_messages($conversation_id, $last_message_id)
+    public function get_new_messages(int $conversation_id, int $last_message_id)
     {
         $messages = Message::where('conversation_id', $conversation_id)->where('id', '>', $last_message_id)->latest('id')->paginate(10);
         return new MessageCollection($messages);
@@ -78,7 +79,7 @@ class ChatController extends Controller
             'message' => translate("Conversation created"),]);
     }
 
-    public function send_message_to_seller($conversation, $message, $seller_user, $user)
+    public function send_message_to_seller(Conversation $conversation, Message $message, User $seller_user, User $user)
     {
         $array['view'] = 'emails.conversation';
         $array['subject'] = 'Sender:- ' . $user->name;

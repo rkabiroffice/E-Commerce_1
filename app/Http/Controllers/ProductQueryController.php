@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductQuery;
 use App\Models\User;
-use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductQueryController extends Controller
 {
@@ -29,7 +29,7 @@ class ProductQueryController extends Controller
     /**
      * Retrieve specific query using query id.
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $query = ProductQuery::find(decrypt($id));
         return view('backend.support.product_query.show', compact('query'));
@@ -53,7 +53,7 @@ class ProductQueryController extends Controller
         $query->product_id = $product->id;
         $query->question = $request->question;
         $query->save();
-        flash(translate('Your query has been submittes successfully'))->success();
+        flash(translate('Your query has been submitted successfully'))->success();
         return redirect()->back();
     }
 
@@ -61,7 +61,7 @@ class ProductQueryController extends Controller
      * Store reply against the question from Admin panel
      */
 
-    public function reply(Request $request, $id)
+    public function reply(Request $request, int|string $id)
     {
         $this->validate($request, [
             'reply' => 'required',

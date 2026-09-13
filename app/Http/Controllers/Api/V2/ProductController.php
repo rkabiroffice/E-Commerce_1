@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Resources\V2\ClassifiedProductDetailCollection;
 use App\Http\Resources\V2\ClassifiedProductMiniCollection;
-use Cache;
 use App\Models\Shop;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\FlashDeal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use App\Utility\SearchUtility;
 use App\Utility\CategoryUtility;
 use App\Http\Resources\V2\ProductCollection;
@@ -26,7 +26,7 @@ class ProductController extends Controller
         return new ProductMiniCollection(Product::latest()->paginate(10));
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         return new ProductDetailCollection(Product::where('id', $id)->get());
         // if (Product::findOrFail($id)->digital==0) {
@@ -42,7 +42,7 @@ class ProductController extends Controller
     //     return new ProductCollection(Product::where('added_by', 'admin')->latest()->paginate(10));
     // }
 
-    public function seller($id, Request $request)
+    public function seller(int $id, Request $request)
     {
         $shop = Shop::findOrFail($id);
         $products = Product::where('added_by', 'seller')->where('user_id', $shop->user_id);
@@ -53,7 +53,7 @@ class ProductController extends Controller
         return new ProductMiniCollection($products->latest()->paginate(10));
     }
 
-    public function category($id, Request $request)
+    public function category(int $id, Request $request)
     {
         $category_ids = CategoryUtility::children_ids($id);
         $category_ids[] = $id;
@@ -68,7 +68,7 @@ class ProductController extends Controller
     }
 
 
-    public function brand($id, Request $request)
+    public function brand(int $id, Request $request)
     {
         $products = Product::where('brand_id', $id)->physical();
         if ($request->name != "" || $request->name != null) {
@@ -106,7 +106,7 @@ class ProductController extends Controller
         return new ProductMiniCollection(filter_products($products)->latest()->paginate(10));
     }
 
-    
+
 
     public function bestSeller()
     {
@@ -116,7 +116,7 @@ class ProductController extends Controller
         });
     }
 
-    public function related($id)
+    public function related(int $id)
     {
         return Cache::remember("app.related_products-$id", 86400, function () use ($id) {
             $product = Product::find($id);
@@ -125,7 +125,7 @@ class ProductController extends Controller
         });
     }
 
-    public function topFromSeller($id)
+    public function topFromSeller(int $id)
     {
         return Cache::remember("app.top_from_this_seller_products-$id", 86400, function () use ($id) {
             $product = Product::find($id);

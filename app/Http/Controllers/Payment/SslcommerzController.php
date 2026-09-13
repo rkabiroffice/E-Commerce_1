@@ -12,8 +12,8 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\SSLCommerz;
 use App\Models\User;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 session_start();
 
@@ -50,7 +50,7 @@ class SslcommerzController extends Controller
                 // $post_data['cus_country'] = $request->session()->get('shipping_info')['country'];
                 // $post_data['cus_phone'] = $request->session()->get('shipping_info')['phone'];
                 // $post_data['cus_email'] = $request->session()->get('shipping_info')['email'];
-                
+
             }
             elseif (Session::get('payment_type') == 'wallet_payment') {
                 $post_data = array();
@@ -68,7 +68,7 @@ class SslcommerzController extends Controller
                 // $_SESSION['payment_values']['payment_data']=$request->session()->get('payment_data');
                 // $_SESSION['payment_values']['payment_type']=$request->session()->get('payment_type');
                 #End to save these value  in session to pick in success page.
-                
+
             }
             elseif (Session::get('payment_type') == 'customer_package_payment') {
                 $customer_package = CustomerPackage::findOrFail(Session::get('payment_data')['customer_package_id']);
@@ -107,7 +107,7 @@ class SslcommerzController extends Controller
                 #End to save these value  in session to pick in success page.
 
             }
-            
+
             # CUSTOMER INFORMATION
             $user = Auth::user();
             $post_data['cus_name'] = $user->name;
@@ -140,7 +140,7 @@ class SslcommerzController extends Controller
         // $post_data['value_d'] = "ref004";
 
         $sslc = new SSLCommerz();
-        
+
         # initiate(Transaction Data , false: Redirect to SSLCOMMERZ gateway/ true: Show all the Payement gateway here )
         $payment_options = $sslc->initiate($post_data, false);
         if (!is_array($payment_options)) {
@@ -215,10 +215,10 @@ class SslcommerzController extends Controller
           #Check order status in order tabel against the transaction id or order id.
           $combined_order = CombinedOrder::findOrFail($request->session()->get('combined_order_id'));
 
-                if($order->payment_status =='Pending')
+                if($combined_order->payment_status =='Pending')
                 {
                     $sslc = new SSLCommerz();
-                    $validation = $sslc->orderValidate($tran_id, $order->grand_total, 'BDT', $request->all());
+                    $validation = $sslc->orderValidate($tran_id, $combined_order->grand_total, 'BDT', $request->all());
                     if($validation == TRUE)
                     {
                         /*

@@ -80,7 +80,7 @@ class CheckoutController
             
             foreach ($cart_items as $key => $cartItem) { 
                 $product = Product::find($cartItem['product_id']);
-                foreach ($coupon_details as $key => $coupon_detail) {
+                foreach ($coupon_details as $coupon_key => $coupon_detail) {
                     if ($coupon_detail->product_id == $cartItem['product_id']) {
                         if ($coupon->discount_type == 'percent') {
                             $coupon_discount += cart_product_price($cartItem, $product, false, false) * $coupon->discount / 100;
