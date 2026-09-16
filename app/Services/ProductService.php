@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\User;
+use App\Utility\CombinationUtility;
 use App\Utility\ProductUtility;
-use Combinations;
 use Illuminate\Support\Str;
 
 class ProductService
@@ -39,7 +39,7 @@ class ProductService
             $discount_end_date   = strtotime($date_var[1]);
         }
         unset($collection['date_range']);
-        
+
         if ($collection['meta_title'] == null) {
             $collection['meta_title'] = $collection['name'];
         }
@@ -79,7 +79,7 @@ class ProductService
 
         $options = ProductUtility::get_attribute_options($collection);
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         if (count($combinations[0]) > 0) {
             foreach ($combinations as $key => $combination) {
                 $str = ProductUtility::get_combination_string($combination, $collection);
@@ -102,7 +102,7 @@ class ProductService
                 $item['attribute_id'] = $no;
                 $attribute_data = array();
                 // foreach (json_decode($request[$str][0]) as $key => $eachValue) {
-                foreach ($collection[$str] as $key => $eachValue) {
+                foreach ($collection[$str] as $valueKey => $eachValue) {
                     // array_push($data, $eachValue->value);
                     array_push($attribute_data, $eachValue);
                 }
@@ -194,7 +194,7 @@ class ProductService
             $discount_end_date   = strtotime($date_var[1]);
         }
         unset($collection['date_range']);
-        
+
         if ($collection['meta_title'] == null) {
             $collection['meta_title'] = $collection['name'];
         }
@@ -205,7 +205,7 @@ class ProductService
         if ($collection['meta_img'] == null) {
             $collection['meta_img'] = $collection['thumbnail_img'];
         }
-        
+
         $shipping_cost = 0;
         if (isset($collection['shipping_type'])) {
             if ($collection['shipping_type'] == 'free') {
@@ -218,7 +218,7 @@ class ProductService
 
         $colors = json_encode(array());
         if (
-            isset($collection['colors_active']) && 
+            isset($collection['colors_active']) &&
             $collection['colors_active'] &&
             $collection['colors'] &&
             count($collection['colors']) > 0
@@ -228,7 +228,7 @@ class ProductService
 
         $options = ProductUtility::get_attribute_options($collection);
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         if (count($combinations[0]) > 0) {
             foreach ($combinations as $key => $combination) {
                 $str = ProductUtility::get_combination_string($combination, $collection);
@@ -251,7 +251,7 @@ class ProductService
                 $item['attribute_id'] = $no;
                 $attribute_data = array();
                 // foreach (json_decode($request[$str][0]) as $key => $eachValue) {
-                foreach ($collection[$str] as $key => $eachValue) {
+                foreach ($collection[$str] as $valueKey => $eachValue) {
                     // array_push($data, $eachValue->value);
                     array_push($attribute_data, $eachValue);
                 }
@@ -272,7 +272,7 @@ class ProductService
         }
 
         unset($collection['button']);
-        
+
         $data = $collection->merge(compact(
             'discount_start_date',
             'discount_end_date',
@@ -282,7 +282,7 @@ class ProductService
             'choice_options',
             'attributes',
         ))->toArray();
-        
+
         $product->update($data);
 
         return $product;

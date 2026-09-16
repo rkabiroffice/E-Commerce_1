@@ -30,7 +30,7 @@ class CartController extends Controller
 
         $sum = 0.00;
         $subtotal = 0.00;
-        $tax = 0.00;       
+        $tax = 0.00;
         foreach ($items as $cartItem) {
             $item_sum = 0.00;
             $item_sum += ($cartItem->price + $cartItem->tax) * $cartItem->quantity;
@@ -96,7 +96,7 @@ class CartController extends Controller
                         $shop_items_data_item["shipping_cost"] =(double) $shop_items_raw_data_item["shipping_cost"];
                         $shop_items_data_item["quantity"] =intval($shop_items_raw_data_item["quantity"]) ;
                         $shop_items_data_item["lower_limit"] = intval($product->min_qty) ;
-                        $shop_items_data_item["upper_limit"] = intval($product->stocks->where('variant', $shop_items_raw_data_item['variation'])->first()->qty) ;
+                        $shop_items_data_item["upper_limit"] = intval($product->stocks->where('variant', $shop_items_raw_data_item['variation'])->first()?->qty ?? 0) ;
 
                         $shop_items_data[] = $shop_items_data_item;
 
@@ -135,6 +135,9 @@ class CartController extends Controller
             $price = $product->unit_price;
         else {
             $product_stock = $product->stocks->where('variant', $variant)->first();
+            if (!$product_stock) {
+                return response()->json(['result' => false, 'message' => translate('Invalid product variation')], 422);
+            }
             $price = $product_stock->price;
         }
 
@@ -171,7 +174,11 @@ class CartController extends Controller
             return response()->json(['result' => false, 'message' => translate("Minimum")." {$product->min_qty} ".translate("item(s) should be ordered")], 200);
         }
 
-        $stock = $product->stocks->where('variant', $variant)->first()->qty;
+        $product_stock = $product->stocks->where('variant', $variant)->first();
+        if (!$product_stock) {
+            return response()->json(['result' => false, 'message' => translate('Invalid product variation')], 422);
+        }
+        $stock = $product_stock->qty;
 
         $variant_string = $variant != null && $variant != "" ? translate("for")." ($variant)" : "";
         if ($stock < $request->quantity && $product->digital == 0) {
@@ -214,7 +221,8 @@ class CartController extends Controller
         $cart = Cart::find($request->id);
         if ($cart != null) {
 
-            if ($cart->product->stocks->where('variant', $cart->variation)->first()->qty >= $request->quantity) {
+            $product_stock = $cart->product->stocks->where('variant', $cart->variation)->first();
+            if ($product_stock && $product_stock->qty >= $request->quantity) {
                 $cart->update([
                     'quantity' => $request->quantity
                 ]);
@@ -243,7 +251,11 @@ class CartController extends Controller
                     return response()->json(['result' => false, 'message' => translate("Minimum")." {$product->min_qty} ".translate("item(s) should be ordered for")." {$product->name}"], 200);
                 }
 
-                $stock = $cart_item->product->stocks->where('variant', $cart_item->variation)->first()->qty;
+                $product_stock = $cart_item->product->stocks->where('variant', $cart_item->variation)->first();
+                if (!$product_stock) {
+                    return response()->json(['result' => false, 'message' => translate('Invalid product variation')], 422);
+                }
+                $stock = $product_stock->qty;
                 $variant_string = $cart_item->variation != null && $cart_item->variation != "" ? " ($cart_item->variation)" : "";
                 if ($stock >= $cart_quantities[$i] || $product->digital == 1) {
                     $cart_item->update([
@@ -271,7 +283,7 @@ class CartController extends Controller
 
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         Cart::destroy($id);
         return response()->json(['result' => true, 'message' => translate('Product is successfully removed from your cart')], 200);

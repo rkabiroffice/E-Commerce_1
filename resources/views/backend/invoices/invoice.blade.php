@@ -16,7 +16,7 @@
             direction: <?php echo  $direction ?>;
             text-align: <?php echo  $text_align ?>;
 			padding:0;
-			margin:0; 
+			margin:0;
 		}
 		.gry-color *,
 		.gry-color{
@@ -60,11 +60,7 @@
 			<table>
 				<tr>
 					<td>
-						@if($logo != null)
-							<img src="{{ uploaded_asset($logo) }}" height="30" style="display:inline-block;">
-						@else
-							<img src="{{ static_asset('assets/img/logo.png') }}" height="30" style="display:inline-block;">
-						@endif
+						<img src="{{ pdf_image_data($logo) }}" height="60" style="display:inline-block;">
 					</td>
 					<td style="font-size: 1.5rem;" class="text-right strong">{{  translate('INVOICE') }}</td>
 				</tr>
@@ -91,7 +87,7 @@
 					<td class="text-right small">
                         <span class="gry-color small">
                             {{  translate('Payment method') }}:
-                        </span> 
+                        </span>
                         <span class="strong">
                             {{ translate(ucfirst(str_replace('_', ' ', $order->payment_type))) }}
                         </span>
@@ -104,13 +100,13 @@
 		<div style="padding: 1rem;padding-bottom: 0">
             <table>
 				@php
-					$shipping_address = json_decode($order->shipping_address);
+					$shipping_address = json_decode($order->shipping_address ?: '{}');
 				@endphp
 				<tr><td class="strong small gry-color">{{ translate('Bill to') }}:</td></tr>
-				<tr><td class="strong">{{ $shipping_address->name }}</td></tr>
-				<tr><td class="gry-color small">{{ $shipping_address->address }}, {{ $shipping_address->city }},  @if(isset(json_decode($order->shipping_address)->state)) {{ json_decode($order->shipping_address)->state }} - @endif {{ $shipping_address->postal_code }}, {{ $shipping_address->country }}</td></tr>
-				<tr><td class="gry-color small">{{ translate('Email') }}: {{ $shipping_address->email }}</td></tr>
-				<tr><td class="gry-color small">{{ translate('Phone') }}: {{ $shipping_address->phone }}</td></tr>
+				<tr><td class="strong">{{ $shipping_address->name ?? '' }}</td></tr>
+				<tr><td class="gry-color small">{{ $shipping_address->address ?? '' }}, {{ $shipping_address->city ?? '' }}, @if(isset($shipping_address->state)) {{ $shipping_address->state }} - @endif {{ $shipping_address->postal_code ?? '' }}, {{ $shipping_address->country ?? '' }}</td></tr>
+				<tr><td class="gry-color small">{{ translate('Email') }}: {{ $shipping_address->email ?? '' }}</td></tr>
+				<tr><td class="gry-color small">{{ translate('Phone') }}: {{ $shipping_address->phone ?? '' }}</td></tr>
 			</table>
 		</div>
 
@@ -131,14 +127,14 @@
 		                @if ($orderDetail->product != null)
 							<tr class="">
 								<td>
-                                    {{ $orderDetail->product->name }} 
+                                    {{ $orderDetail->product->name }}
                                     @if($orderDetail->variation != null) ({{ $orderDetail->variation }}) @endif
                                     <br>
                                     <small>
                                         @php
-                                            $product_stock = json_decode($orderDetail->product->stocks->first(), true);
+												$product_stock = $orderDetail->product->stocks->where('variant', $orderDetail->variation)->first() ?? $orderDetail->product->stocks->first();
                                         @endphp
-                                        {{translate('SKU')}}: {{ $product_stock['sku'] }}
+										{{ translate('SKU') }}: {{ $product_stock->sku ?? '' }}
                                     </small>
                                 </td>
 								<td>
@@ -182,10 +178,8 @@
 		        <tbody>
 			        <tr>
 			            <td class="text-left">
-                            @php
-                                $removedXML = '<?xml version="1.0" encoding="UTF-8"?>';
-                            @endphp
-                            {!! str_replace($removedXML,"", QrCode::size(100)->generate($order->code)) !!}
+								<strong>{{ translate('Invoice') }}:</strong>
+								{{ $order->code }}
 			            </td>
 			            <td>
 					        <table class="text-right sm-padding small strong">

@@ -5,14 +5,13 @@ namespace App\Http\Controllers\Seller;
 use App\Models\Currency;
 use App\Models\Language;
 use App\Models\Order;
-use Session;
-use PDF;
-use Config;
+use Illuminate\Support\Facades\Session;
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
 
 class InvoiceController extends Controller
 {
     //download invoice
-    public function invoice_download($id)
+    public function invoice_download(int $id)
     {
         if(Session::has('currency_code')){
             $currency_code = Session::get('currency_code');
@@ -20,16 +19,16 @@ class InvoiceController extends Controller
         else{
             $currency_code = Currency::findOrFail(get_setting('system_default_currency'))->code;
         }
-        $language_code = Session::get('locale', Config::get('app.locale'));
+        $language_code = Session::get('locale', app()->getLocale());
 
-        if(Language::where('code', $language_code)->first()->rtl == 1){
+        if(Language::where('code', $language_code)->first()?->rtl == 1){
             $direction = 'rtl';
             $text_align = 'right';
             $not_text_align = 'left';
         }else{
             $direction = 'ltr';
             $text_align = 'left';
-            $not_text_align = 'right';            
+            $not_text_align = 'right';
         }
 
         if($currency_code == 'BDT' || $language_code == 'bd'){
@@ -54,7 +53,7 @@ class InvoiceController extends Controller
             // general for all
             $font_family = "'Roboto','sans-serif'";
         }
-        
+
         // $config = ['instanceConfigurator' => function($mpdf) {
         //     $mpdf->showImageErrors = true;
         // }];
@@ -63,7 +62,7 @@ class InvoiceController extends Controller
         $config = [];
 
         $order = Order::findOrFail($id);
-        return PDF::loadView('backend.invoices.invoice',[
+        return Pdf::loadView('backend.invoices.invoice',[
             'order' => $order,
             'font_family' => $font_family,
             'direction' => $direction,

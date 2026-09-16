@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Utility;
-use Cache;
+use Illuminate\Support\Facades\Cache;
 
 class PayhereUtility
 {
@@ -23,23 +23,23 @@ class PayhereUtility
         return $sandbox ? PayhereUtility::action_url('sandbox') : PayhereUtility::action_url('live');
     }
 
-    public static  function create_checkout_form($combined_order_id, $amount, $first_name, $last_name, $phone, $email,$address,$city)
+    public static function create_checkout_form(int|string $combined_order_id, int|float|string $amount, string $first_name, string $last_name, string $phone, string $email, string $address, string $city)
     {
         return view('frontend.payhere.checkout_form', compact('combined_order_id', 'amount', 'first_name', 'last_name', 'phone', 'email','address','city'));
     }
 
-    public static  function create_wallet_form($user_id,$order_id, $amount, $first_name, $last_name, $phone, $email,$address,$city)
+    public static function create_wallet_form(int|string $user_id, int|string $order_id, int|float|string $amount, string $first_name, string $last_name, string $phone, string $email, string $address, string $city)
     {
         return view('frontend.payhere.wallet_form', compact('user_id','order_id', 'amount', 'first_name', 'last_name', 'phone', 'email','address','city'));
     }
 
-    public static  function create_customer_package_form($user_id,$package_id,$order_id, $amount, $first_name, $last_name, $phone, $email,$address,$city)
+    public static function create_customer_package_form(int|string $user_id, int|string $package_id, int|string $order_id, int|float|string $amount, string $first_name, string $last_name, string $phone, string $email, string $address, string $city)
     {
         return view('frontend.payhere.customer_package_form', compact('user_id','package_id','order_id', 'amount', 'first_name', 'last_name', 'phone', 'email','address','city'));
     }
 
 
-    public static function getHash($order_id, $payhere_amount)
+    public static function getHash(int|string $order_id, int|float|string $payhere_amount)
     {
         $hash = strtoupper (md5 ( env('PAYHERE_MERCHANT_ID') . $order_id . $payhere_amount . env('PAYHERE_CURRENCY') . strtoupper(md5(env('PAYHERE_SECRET'))) ) );
         return $hash;

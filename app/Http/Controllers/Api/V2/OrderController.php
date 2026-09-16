@@ -66,6 +66,7 @@ class OrderController extends Controller
             $seller_products[$product->user_id] = $product_ids;
         }
 
+        $order = null;
         foreach ($seller_products as $seller_product) {
             $order = new Order;
             $order->combined_order_id = $combined_order->id;
@@ -87,7 +88,7 @@ class OrderController extends Controller
             }else{
                 $order->payment_status = 'unpaid';
             }
-            
+
             $order->save();
 
             $subtotal = 0;
@@ -208,12 +209,13 @@ class OrderController extends Controller
             || $request->payment_type == 'wallet'
             || strpos($request->payment_type, "manual_payment_") !== false // if payment type like  manual_payment_1 or  manual_payment_25 etc
         ) {
-            NotificationUtility::sendOrderPlacedNotification($order);
+            if ($order) {
+                NotificationUtility::sendOrderPlacedNotification($order);
+            }
         }
 
 
         return response()->json([
-            'combined_order_id' => $combined_order->id,
             'result' => true,
             'message' => translate('Your order has been placed successfully')
         ]);

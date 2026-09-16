@@ -14,8 +14,7 @@ class SliderController extends Controller
      */
     public function index()
     {
-        $sliders = Slider::all();
-        return view('sliders.index', compact('sliders'));
+        return redirect()->route('website.pages');
     }
 
     /**
@@ -25,7 +24,7 @@ class SliderController extends Controller
      */
     public function create()
     {
-        return view('sliders.create');
+        return redirect()->route('website.pages');
     }
 
     /**
@@ -45,7 +44,7 @@ class SliderController extends Controller
             }
             flash(translate('Slider has been inserted successfully'))->success();
         }
-        return redirect()->route('home_settings.index');
+        return redirect()->route('website.pages');
     }
 
     /**
@@ -106,6 +105,6 @@ class SliderController extends Controller
         else{
             flash(translate('Something went wrong'))->error();
         }
-        return redirect()->route('home_settings.index');
+        return redirect()->route('website.pages');
     }
 }

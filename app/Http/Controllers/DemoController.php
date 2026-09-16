@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\ProductStock;
 use Illuminate\Http\Request;
-use DB;
-use Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use ZipArchive;
-use File;
-use Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 use App\Models\Upload;
 use App\Models\Banner;
 use App\Models\Brand;
@@ -28,7 +28,7 @@ use App\Models\ProductTax;
 use App\Models\Tax;
 use App\Models\Shop;
 use App\Models\Slider;
-use App\HomeCategory;
+use App\Models\HomeCategory;
 use App\Models\BusinessSetting;
 use App\Models\Translation;
 use App\Models\AttributeValue;
@@ -231,7 +231,7 @@ class DemoController extends Controller
         foreach (CustomerProduct::all() as $key => $product) {
             if ($product->photos != null) {
                 $files = array();
-                foreach (json_decode($product->photos) as $key => $photo) {
+                foreach (json_decode($product->photos) as $photo) {
                     $arr = explode('.', $photo);
                     $upload = Upload::create([
                         'file_original_name' => null, 'file_name' => $photo, 'user_id' => $product->user_id, 'extension' => $arr[1],
@@ -281,7 +281,7 @@ class DemoController extends Controller
         foreach (Product::all() as $key => $product) {
             if ($product->photos != null) {
                 $files = array();
-                foreach (json_decode($product->photos) as $key => $photo) {
+                foreach (json_decode($product->photos) as $photo) {
                     $arr = explode('.', $photo);
                     $upload = Upload::create([
                         'file_original_name' => null, 'file_name' => $photo, 'user_id' => $product->user_id, 'extension' => $arr[1],
@@ -338,7 +338,7 @@ class DemoController extends Controller
         foreach (Shop::all() as $key => $shop) {
             if ($shop->sliders != null) {
                 $files = array();
-                foreach (json_decode($shop->sliders) as $key => $photo) {
+                foreach (json_decode($shop->sliders) as $photo) {
                     $arr = explode('.', $photo);
                     $upload = Upload::create([
                         'file_original_name' => null, 'file_name' => $photo, 'user_id' => $shop->user_id, 'extension' => $arr[1],
@@ -551,7 +551,7 @@ class DemoController extends Controller
         }
     }
 
-    public function update_seller_id_in_orders($id_min, $id_max)
+    public function update_seller_id_in_orders(int $id_min, int $id_max)
     {
         $orders = Order::where('id', '>=', $id_min)->where('id', '<=', $id_max)->get();
 
@@ -561,7 +561,7 @@ class DemoController extends Controller
 
     }
 
-    public function update_seller_id_in_order($order)
+    public function update_seller_id_in_order(Order $order)
     {
         if($order->seller_id == 0){
             //dd($order->orderDetails[0]->seller_id);

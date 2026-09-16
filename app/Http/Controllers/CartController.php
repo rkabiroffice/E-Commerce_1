@@ -39,20 +39,21 @@ class CartController extends Controller
 
     public function showCartModal(Request $request)
     {
-        $product = Product::find($request->id);
+        $product = Product::findOrFail($request->id);
         return view('frontend.partials.addToCart', compact('product'));
     }
 
     public function showCartModalAuction(Request $request)
     {
-        $product = Product::find($request->id);
+        $product = Product::findOrFail($request->id);
         return view('auction.frontend.addToCartAuction', compact('product'));
     }
 
     public function addToCart(Request $request)
     {
 
-        $product = Product::find($request->id);
+        $product = Product::findOrFail($request->id);
+        $requestedQuantity = max(1, (int) $request->input('quantity', 1));
         $carts = array();
         $data = array();
 
@@ -93,7 +94,7 @@ class CartController extends Controller
 
             if ($product->digital != 1) {
                 //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
-                foreach (json_decode(Product::find($request->id)->choice_options) as $key => $choice) {
+                foreach (json_decode($product->choice_options) ?: [] as $choice) {
                     if($str != null){
                         $str .= '-'.str_replace(' ', '', $request['attribute_id_'.$choice->attribute_id]);
                     }
@@ -106,18 +107,26 @@ class CartController extends Controller
             $data['variation'] = $str;
 
             $product_stock = $product->stocks->where('variant', $str)->first();
-            $price = $product_stock->price;
+            if ($product->digital != 1 && !$product_stock) {
+                return array(
+                    'status' => 0,
+                    'cart_count' => count($carts),
+                    'modal_view' => view('frontend.partials.outOfStockCart')->render(),
+                    'nav_cart_view' => view('frontend.partials.cart')->render(),
+                );
+            }
+            $price = $product->digital == 1 ? $product->unit_price : $product_stock->price;
 
-            if($product->wholesale_product){
-                $wholesalePrice = $product_stock->wholesalePrices->where('min_qty', '<=', $request->quantity)->where('max_qty', '>=', $request->quantity)->first();
+            if($product->digital != 1 && $product->wholesale_product){
+                $wholesalePrice = $product_stock->wholesalePrices->where('min_qty', '<=', $requestedQuantity)->where('max_qty', '>=', $requestedQuantity)->first();
                 if($wholesalePrice){
                     $price = $wholesalePrice->price;
                 }
             }
 
-            $quantity = $product_stock->qty;
+            $quantity = $product->digital == 1 ? PHP_INT_MAX : $product_stock->qty;
 
-            if($quantity < $request['quantity']) {
+            if($quantity < $requestedQuantity) {
                 return array(
                     'status' => 0,
                     'cart_count' => count($carts),
@@ -156,7 +165,7 @@ class CartController extends Controller
                 }
             }
 
-            $data['quantity'] = $request['quantity'];
+            $data['quantity'] = $requestedQuantity;
             $data['price'] = $price;
             $data['tax'] = $tax;
             //$data['shipping'] = 0;
@@ -164,10 +173,6 @@ class CartController extends Controller
             $data['product_referral_code'] = null;
             $data['cash_on_delivery'] = $product->cash_on_delivery;
             $data['digital'] = $product->digital;
-
-            if ($request['quantity'] == null){
-                $data['quantity'] = 1;
-            }
 
             if(Cookie::has('referred_product_id') && Cookie::get('referred_product_id') == $product->id) {
                 $data['product_referral_code'] = Cookie::get('product_referral_code');
@@ -178,6 +183,9 @@ class CartController extends Controller
 
                 foreach ($carts as $key => $cartItem){
                     $cart_product = Product::where('id', $cartItem['product_id'])->first();
+                    if (!$cart_product) {
+                        continue;
+                    }
                     if($cart_product->auction_product == 1){
                         return array(
                             'status' => 0,
@@ -189,8 +197,11 @@ class CartController extends Controller
 
                     if($cartItem['product_id'] == $request->id) {
                         $product_stock = $cart_product->stocks->where('variant', $str)->first();
+                        if (!$product_stock) {
+                            continue;
+                        }
                         $quantity = $product_stock->qty;
-                        if($quantity < $cartItem['quantity'] + $request['quantity']){
+                        if($quantity < $cartItem['quantity'] + $requestedQuantity){
                             return array(
                                 'status' => 0,
                                 'cart_count' => count($carts),
@@ -201,10 +212,10 @@ class CartController extends Controller
                         if(($str != null && $cartItem['variation'] == $str) || $str == null){
                             $foundInCart = true;
 
-                            $cartItem['quantity'] += $request['quantity'];
+                            $cartItem['quantity'] += $requestedQuantity;
 
                             if($cart_product->wholesale_product){
-                                $wholesalePrice = $product_stock->wholesalePrices->where('min_qty', '<=', $request->quantity)->where('max_qty', '>=', $request->quantity)->first();
+                                $wholesalePrice = $product_stock->wholesalePrices->where('min_qty', '<=', $requestedQuantity)->where('max_qty', '>=', $requestedQuantity)->first();
                                 if($wholesalePrice){
                                     $price = $wholesalePrice->price;
                                 }

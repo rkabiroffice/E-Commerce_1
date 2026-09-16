@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SubCategory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SubCategory whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SubCategory whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Builder
  */
 
 class SubCategory extends Model

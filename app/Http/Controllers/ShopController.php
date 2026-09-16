@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\BusinessSetting;
-use Auth;
-use Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Notifications\EmailVerificationNotification;
 
 class ShopController extends Controller
@@ -44,7 +44,7 @@ class ShopController extends Controller
 				flash(translate('This user already a seller'))->error();
 				return back();
 			}
-            
+
         } else {
             return view('frontend.seller_form');
         }

@@ -763,7 +763,7 @@
                                         <div class="form-group">
                                             <textarea class="form-control" rows="3" cols="40" name="question"
                                                 placeholder="{{ translate('Write your question here...') }}" style="resize: none;"></textarea>
-                                            
+
                                         </div>
                                         <button type="submit" class="btn btn-primary">{{ translate('Submit') }}</button>
                                     </form>
@@ -772,7 +772,7 @@
                                     $own_product_queries = Auth::user()->product_queries->where('product_id',$detailedProduct->id);
                                 @endphp
                                 @if ($own_product_queries->count() > 0)
-                                
+
                                     <div class="question-area my-4   mb-0 ml-3">
 
                                         <div class="border-bottom py-3">
@@ -824,7 +824,7 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                
+
                                 @endif
                             @endauth
 

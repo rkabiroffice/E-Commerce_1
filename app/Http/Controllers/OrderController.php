@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\AffiliateController;
+use App\Http\Controllers\Api\V2\DeliveryBoyController;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Cart;
@@ -15,11 +16,10 @@ use App\Models\Coupon;
 use App\Models\User;
 use App\Models\CombinedOrder;
 use App\Models\SmsTemplate;
-use Auth;
-use Mail;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Mail\InvoiceEmailManager;
 use App\Utility\NotificationUtility;
-use CoreComponentRepository;
 use App\Utility\SmsUtility;
 use Illuminate\Support\Facades\Route;
 
@@ -37,8 +37,6 @@ class OrderController extends Controller
     // All Orders
     public function all_orders(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-
         $date = $request->date;
         $sort_search = null;
         $delivery_status = null;
@@ -238,7 +236,7 @@ class OrderController extends Controller
                 if (addon_is_activated('club_point')) {
                     $order_detail->earn_point = $product->earn_point;
                 }
-                
+
                 $order_detail->save();
 
                 $product->num_of_sale += $cartItem['quantity'];
@@ -469,16 +467,17 @@ class OrderController extends Controller
         //sends Notifications to user
         NotificationUtility::sendNotification($order, $request->status);
         if (get_setting('google_firebase') == 1 && $order->user->device_token != null) {
-            $request->device_token = $order->user->device_token;
-            $request->title = "Order updated !";
             $status = str_replace("_", "", $order->delivery_status);
-            $request->text = " Your order {$order->code} has been {$status}";
 
-            $request->type = "order";
-            $request->id = $order->id;
-            $request->user_id = $order->user->id;
+            $notification_data = new \stdClass();
+            $notification_data->device_token = $order->user->device_token;
+            $notification_data->title = "Order updated !";
+            $notification_data->text = " Your order {$order->code} has been {$status}";
+            $notification_data->type = "order";
+            $notification_data->id = $order->id;
+            $notification_data->user_id = $order->user->id;
 
-            NotificationUtility::sendFirebaseNotification($request);
+            NotificationUtility::sendFirebaseNotification($notification_data);
         }
 
 
@@ -540,16 +539,17 @@ class OrderController extends Controller
         //sends Notifications to user
         NotificationUtility::sendNotification($order, $request->status);
         if (get_setting('google_firebase') == 1 && $order->user->device_token != null) {
-            $request->device_token = $order->user->device_token;
-            $request->title = "Order updated !";
             $status = str_replace("_", "", $order->payment_status);
-            $request->text = " Your order {$order->code} has been {$status}";
 
-            $request->type = "order";
-            $request->id = $order->id;
-            $request->user_id = $order->user->id;
+            $notification_data = new \stdClass();
+            $notification_data->device_token = $order->user->device_token;
+            $notification_data->title = "Order updated !";
+            $notification_data->text = " Your order {$order->code} has been {$status}";
+            $notification_data->type = "order";
+            $notification_data->id = $order->id;
+            $notification_data->user_id = $order->user->id;
 
-            NotificationUtility::sendFirebaseNotification($request);
+            NotificationUtility::sendFirebaseNotification($notification_data);
         }
 
 

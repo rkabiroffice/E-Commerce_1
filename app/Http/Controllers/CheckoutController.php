@@ -15,8 +15,8 @@ use App\Models\CombinedOrder;
 use App\Models\Product;
 use App\Utility\PayhereUtility;
 use App\Utility\NotificationUtility;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
 {
@@ -32,7 +32,7 @@ class CheckoutController extends Controller
         // Minumum order amount check
         if(get_setting('minimum_order_amount_check') == 1){
             $subtotal = 0;
-            foreach (Cart::where('user_id', Auth::user()->id)->get() as $key => $cartItem){ 
+            foreach (Cart::where('user_id', Auth::user()->id)->get() as $key => $cartItem){
                 $product = Product::find($cartItem['product_id']);
                 $subtotal += cart_product_price($cartItem, $product, false, false) * $cartItem['quantity'];
             }
@@ -42,12 +42,12 @@ class CheckoutController extends Controller
             }
         }
         // Minumum order amount check end
-        
+
         if ($request->payment_option != null) {
             (new OrderController)->store($request);
 
             $request->session()->put('payment_type', 'cart_payment');
-            
+
             $data['combined_order_id'] = $request->session()->get('combined_order_id');
             $request->session()->put('payment_data', $data);
 
@@ -82,7 +82,7 @@ class CheckoutController extends Controller
     }
 
     //redirects to this method after a successfull checkout
-    public function checkout_done($combined_order_id, $payment)
+    public function checkout_done(int $combined_order_id, mixed $payment)
     {
         $combined_order = CombinedOrder::findOrFail($combined_order_id);
 
@@ -139,7 +139,7 @@ class CheckoutController extends Controller
             })->orWhere('free_shipping', 1);
             $carrier_list = $carrier_query->get();
         }
-        
+
         return view('frontend.delivery_info', compact('carts','carrier_list'));
     }
 
@@ -211,12 +211,12 @@ class CheckoutController extends Controller
                                     ->get();
 
                     $coupon_discount = 0;
-                    
+
                     if ($coupon->type == 'cart_base') {
                         $subtotal = 0;
                         $tax = 0;
                         $shipping = 0;
-                        foreach ($carts as $key => $cartItem) { 
+                        foreach ($carts as $key => $cartItem) {
                             $product = Product::find($cartItem['product_id']);
                             $subtotal += cart_product_price($cartItem, $product, false, false) * $cartItem['quantity'];
                             $tax += cart_product_tax($cartItem, $product,false) * $cartItem['quantity'];
@@ -235,9 +235,9 @@ class CheckoutController extends Controller
 
                         }
                     } elseif ($coupon->type == 'product_base') {
-                        foreach ($carts as $key => $cartItem) { 
+                        foreach ($carts as $key => $cartItem) {
                             $product = Product::find($cartItem['product_id']);
-                            foreach ($coupon_details as $key => $coupon_detail) {
+                            foreach ($coupon_details as $coupon_detail_key => $coupon_detail) {
                                 if ($coupon_detail->product_id == $cartItem['product_id']) {
                                     if ($coupon->discount_type == 'percent') {
                                         $coupon_discount += (cart_product_price($cartItem, $product, false, false) * $coupon->discount / 100) * $cartItem['quantity'];
@@ -266,7 +266,7 @@ class CheckoutController extends Controller
                         $response_message['response'] = 'warning';
                         $response_message['message'] = translate('This coupon is not applicable to your cart products!');
                     }
-                    
+
                 } else {
                     $response_message['response'] = 'warning';
                     $response_message['message'] = translate('You already used this coupon!');
@@ -338,7 +338,7 @@ class CheckoutController extends Controller
 
         //Session::forget('club_point');
         //Session::forget('combined_order_id');
-        
+
         foreach($combined_order->orders as $order){
             NotificationUtility::sendOrderPlacedNotification($order);
         }

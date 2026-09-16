@@ -6,7 +6,7 @@ use App\Mail\InvoiceEmailManager;
 use App\Models\User;
 use App\Models\SmsTemplate;
 use App\Http\Controllers\OTPVerificationController;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\OrderNotification;
 use App\Models\FirebaseNotification;

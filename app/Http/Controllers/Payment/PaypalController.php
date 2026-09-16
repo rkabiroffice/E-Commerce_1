@@ -16,8 +16,8 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
-use Session;
-use Redirect;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 
 class PaypalController extends Controller
 {
@@ -73,7 +73,11 @@ class PaypalController extends Controller
 
         try {
             // Call API with your client and get a response for your call
-            $response = $client->execute($request);
+            $approval_link = collect($response->result->links ?? [])->firstWhere('rel', 'approve');
+            if (!$approval_link) {
+                throw new \RuntimeException('PayPal approval link was not returned.');
+            }
+            return Redirect::to($approval_link->href);
             // If call returns body in response, you can get the deserialized version from the result attribute of the response
             return Redirect::to($response->result->links[1]->href);
         }catch (\Exception $ex) {

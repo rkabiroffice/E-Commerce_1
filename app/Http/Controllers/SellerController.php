@@ -11,7 +11,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\EmailVerificationNotification;
-use Cache;
+use Illuminate\Support\Facades\Cache;
 
 class SellerController extends Controller
 {

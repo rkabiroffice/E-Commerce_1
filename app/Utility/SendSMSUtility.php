@@ -8,9 +8,9 @@ use Twilio\Rest\Client;
 
 class SendSMSUtility
 {
-    public static function sendSMS($to, $from, $text, $template_id)
+    public static function sendSMS(string|int $to, string|int $from, string $text, int|string|null $template_id)
     {
-        if (OtpConfiguration::where('type', 'nexmo')->first()->value == 1) {
+        if (OtpConfiguration::where('type', 'nexmo')->first()?->value == 1) {
             $api_key = env("NEXMO_KEY"); //put ssl provided api_token here
             $api_secret = env("NEXMO_SECRET"); // put ssl provided sid here
 
@@ -41,7 +41,7 @@ class SendSMSUtility
             curl_close($ch);
 
             return $response;
-        } elseif (OtpConfiguration::where('type', 'twillo')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'twillo')->first()?->value == 1) {
             $sid = env("TWILIO_SID"); // Your Account SID from www.twilio.com/console
             $token = env("TWILIO_AUTH_TOKEN"); // Your Auth Token from www.twilio.com/console
 
@@ -56,7 +56,7 @@ class SendSMSUtility
                 );
             } catch (\Exception $e) {
             }
-        } elseif (OtpConfiguration::where('type', 'ssl_wireless')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'ssl_wireless')->first()?->value == 1) {
             $token = env("SSL_SMS_API_TOKEN"); //put ssl provided api_token here
             $sid = env("SSL_SMS_SID"); // put ssl provided sid here
 
@@ -89,7 +89,7 @@ class SendSMSUtility
             curl_close($ch);
 
             return $response;
-        } elseif (OtpConfiguration::where('type', 'fast2sms')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'fast2sms')->first()?->value == 1) {
 
             if (strpos($to, '+91') !== false) {
                 $to = substr($to, 3);
@@ -145,12 +145,12 @@ class SendSMSUtility
             curl_close($curl);
 
             return $response;
-        } elseif (OtpConfiguration::where('type', 'mimo')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'mimo')->first()?->value == 1) {
             $token = MimoUtility::getToken();
 
             MimoUtility::sendMessage($text, $to, $token);
             MimoUtility::logout($token);
-        } elseif (OtpConfiguration::where('type', 'mimsms')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'mimsms')->first()?->value == 1) {
             $url = env('MIM_BASE_URL') . "/smsapi";
             $data = [
                 "api_key" => env('MIM_API_KEY'),
@@ -168,7 +168,7 @@ class SendSMSUtility
             $response = curl_exec($ch);
             curl_close($ch);
             return $response;
-        } elseif (OtpConfiguration::where('type', 'msegat')->first()->value == 1) {
+        } elseif (OtpConfiguration::where('type', 'msegat')->first()?->value == 1) {
             $url = "https://www.msegat.com/gw/sendsms.php";
             $data = [
                 "apiKey" => env('MSEGAT_API_KEY'),
@@ -186,11 +186,11 @@ class SendSMSUtility
             $response = curl_exec($ch);
             curl_close($ch);
             return $response;
-        }elseif (OtpConfiguration::where('type', 'sparrow')->first()->value == 1) {
-            $url = "http://api.sparrowsms.com/v2/sms/";  
+        }elseif (OtpConfiguration::where('type', 'sparrow')->first()?->value == 1) {
+            $url = "http://api.sparrowsms.com/v2/sms/";
 
             $args = http_build_query(array(
-                "token" => env('SPARROW_TOKEN'),                
+                "token" => env('SPARROW_TOKEN'),
                 "from" => env('MESSGAE_FROM'),
                 "to" => $to,
                 "text" => $text));

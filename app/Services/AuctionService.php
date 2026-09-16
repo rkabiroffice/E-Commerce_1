@@ -7,8 +7,8 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\ProductTax;
 use App\Models\ProductTranslation;
-use Artisan;
-use Auth;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -174,7 +174,7 @@ class AuctionService
         Artisan::call('cache:clear');
     }
 
-    public function update(Request $request , $id){
+    public function update(Request $request, int $id){
         $product                    = Product::findOrFail($id);
         $product->category_id       = $request->category_id;
         $product->brand_id          = $request->brand_id;
@@ -297,7 +297,7 @@ class AuctionService
         Artisan::call('cache:clear');
     }
 
-    public function destroy($id){
+    public function destroy(int $id){
         $product = Product::findOrFail($id);
         foreach ($product->product_translations as $key => $product_translations) {
             $product_translations->delete();

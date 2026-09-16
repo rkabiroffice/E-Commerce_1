@@ -11,8 +11,7 @@ use App\Models\ProductTax;
 use App\Models\AttributeValue;
 use App\Models\Cart;
 use Carbon\Carbon;
-use Laracon21\Combinations\Combinations;
-use MehediIitdu\CoreComponentRepository\CoreComponentRepository;
+use App\Utility\CombinationUtility;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -55,8 +54,6 @@ class ProductController extends Controller
      */
     public function admin_products(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-
         $type = 'In House';
         $col_name = null;
         $query = null;
@@ -161,8 +158,6 @@ class ProductController extends Controller
      */
     public function create()
     {
-        CoreComponentRepository::initializeCache();
-
         $categories = Category::where('parent_id', 0)
             ->where('digital', 0)
             ->with('childrenCategories')
@@ -247,8 +242,6 @@ class ProductController extends Controller
      */
     public function admin_product_edit(Request $request, $id)
     {
-        CoreComponentRepository::initializeCache();
-
         $product = Product::findOrFail($id);
         if ($product->digital == 1) {
             return redirect('admin/digitalproducts/' . $id . '/edit');
@@ -509,7 +502,7 @@ class ProductController extends Controller
             }
         }
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         return view('backend.product.products.sku_combinations', compact('combinations', 'unit_price', 'colors_active', 'product_name'));
     }
 
@@ -541,7 +534,7 @@ class ProductController extends Controller
             }
         }
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         return view('backend.product.products.sku_combinations_edit', compact('combinations', 'unit_price', 'colors_active', 'product_name', 'product'));
     }
 }

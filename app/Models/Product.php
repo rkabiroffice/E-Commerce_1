@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\App;
 
 class Product extends Model
 {
@@ -74,12 +75,12 @@ class Product extends Model
         return $this->hasMany(AuctionProductBid::class);
     }
 
-    public function scopePhysical($query)
+    public function scopePhysical(Builder $query): Builder
     {
         return $query->where('digital', 0);
     }
 
-    public function scopeDigital($query)
+    public function scopeDigital(Builder $query): Builder
     {
         return $query->where('digital', 1);
     }

@@ -13,12 +13,12 @@ use App\Services\ProductService;
 use App\Services\ProductTaxService;
 use App\Services\ProductFlashDealService;
 use App\Services\ProductStockService;
+use App\Utility\CombinationUtility;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Laracon21\Combinations\Combinations;
 
 class ProductController extends Controller
 {
@@ -194,7 +194,7 @@ class ProductController extends Controller
             }
         }
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         return view('backend.product.products.sku_combinations', compact('combinations', 'unit_price', 'colors_active', 'product_name'));
     }
 
@@ -224,7 +224,7 @@ class ProductController extends Controller
             }
         }
 
-        $combinations = Combinations::makeCombinations($options);
+        $combinations = CombinationUtility::makeCombinations($options);
         return view('backend.product.products.sku_combinations_edit', compact('combinations', 'unit_price', 'colors_active', 'product_name', 'product'));
     }
 

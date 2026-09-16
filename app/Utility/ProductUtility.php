@@ -3,11 +3,11 @@
 namespace App\Utility;
 
 use App\Models\Color;
-use Combinations;
+use Illuminate\Support\Collection;
 
 class ProductUtility
 {
-    public static function get_attribute_options($collection)
+    public static function get_attribute_options(Collection $collection): array
     {
         $options = array();
         if (
@@ -21,10 +21,10 @@ class ProductUtility
         }
 
         if (isset($collection['choice_no']) && $collection['choice_no']) {
-            foreach ($collection['choice_no'] as $key => $no) {
+            foreach ($collection['choice_no'] as $choiceKey => $no) {
                 $name = 'choice_options_' . $no;
                 $data = array();
-                foreach (request()[$name] as $key => $eachValue) {
+                foreach (request()[$name] as $valueKey => $eachValue) {
                     array_push($data, $eachValue);
                 }
                 array_push($options, $data);
@@ -34,11 +34,11 @@ class ProductUtility
         return $options;
     }
 
-    public static function get_combination_string($combination, $collection)
+    public static function get_combination_string(array $combination, Collection $collection): string
     {
         $str = '';
-        foreach ($combination as $key => $item) {
-            if ($key > 0) {
+        foreach ($combination as $combinationKey => $item) {
+            if ($combinationKey > 0) {
                 $str .= '-' . str_replace(' ', '', $item);
             } else {
                 if (isset($collection['colors_active']) && $collection['colors_active'] && $collection['colors'] && count($collection['colors']) > 0) {

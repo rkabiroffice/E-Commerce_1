@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Upload;
-use Response;
-use Auth;
-use Storage;
-use Image;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class AizUploadController extends Controller
 {
@@ -208,7 +208,7 @@ class AizUploadController extends Controller
         return $uploads->paginate(60)->appends(request()->query());
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $upload = Upload::findOrFail($id);
 
@@ -290,7 +290,7 @@ class AizUploadController extends Controller
     }
 
     //Download project attachment
-    public function attachment_download($id)
+    public function attachment_download(int $id)
     {
         $project_attachment = Upload::find($id);
         try {

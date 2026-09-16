@@ -2,21 +2,22 @@
 
 namespace App\Services;
 
+use App\Models\Product;
 use App\Models\ProductStock;
+use App\Utility\CombinationUtility;
 use App\Utility\ProductUtility;
-use Combinations;
 
 class ProductStockService
 {
-    public function store(array $data, $product)
+    public function store(array $data, Product $product)
     {
         $collection = collect($data);
 
         $options = ProductUtility::get_attribute_options($collection);
-        
+
         //Generates the combinations of customer choice options
-        $combinations = Combinations::makeCombinations($options);
-        
+        $combinations = CombinationUtility::makeCombinations($options);
+
         $variant = '';
         if (count($combinations[0]) > 0) {
             $product->variant_product = 1;
@@ -39,12 +40,12 @@ class ProductStockService
             unset($collection['current_stock']);
 
             $data = $collection->merge(compact('variant', 'qty', 'price'))->toArray();
-            
+
             ProductStock::create($data);
         }
     }
 
-    public function product_duplicate_store($product_stocks , $product_new)
+    public function product_duplicate_store(iterable $product_stocks, Product $product_new)
     {
         foreach ($product_stocks as $key => $stock) {
             $product_stock              = new ProductStock;

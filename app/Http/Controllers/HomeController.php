@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
-use Hash;
-use Mail;
-use Cache;
-use Cookie;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use App\Models\Cart;
 use App\Models\Page;
 use App\Models\Shop;
@@ -131,7 +131,7 @@ class HomeController extends Controller
         } elseif (Auth::user()->user_type == 'customer') {
             return view('frontend.user.customer.dashboard');
         } elseif (Auth::user()->user_type == 'delivery_boy') {
-            return view('delivery_boys.frontend.dashboard');
+            return view('frontend.user.customer.dashboard');
         } else {
             abort(404);
         }
@@ -142,7 +142,7 @@ class HomeController extends Controller
         if (Auth::user()->user_type == 'seller') {
             return redirect()->route('seller.profile.index');
         } elseif (Auth::user()->user_type == 'delivery_boy') {
-            return view('delivery_boys.frontend.profile');
+            return view('frontend.user.profile');
         } else {
             return view('frontend.user.profile');
         }
@@ -155,7 +155,7 @@ class HomeController extends Controller
             return back();
         }
 
-        $user = Auth::user();
+        $user = User::findOrFail(Auth::id());
         $user->name = $request->name;
         $user->address = $request->address;
         $user->country = $request->country;
@@ -174,7 +174,7 @@ class HomeController extends Controller
         return back();
     }
 
-    public function flash_deal_details($slug)
+    public function flash_deal_details(string $slug)
     {
         $flash_deal = FlashDeal::where('slug', $slug)->first();
         if ($flash_deal != null)
@@ -223,9 +223,13 @@ class HomeController extends Controller
         return view('frontend.track_order');
     }
 
-    public function product(Request $request, $slug)
+    public function product(Request $request, string $slug)
     {
         $detailedProduct  = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')->where('auction_product', 0)->where('slug', $slug)->where('approved', 1)->first();
+
+        if ($detailedProduct == null || !$detailedProduct->published) {
+            abort(404);
+        }
 
         $product_queries = ProductQuery::where('product_id', $detailedProduct->id)->where('customer_id', '!=', Auth::id())->latest('id')->paginate(10);
         $total_query = ProductQuery::where('product_id', $detailedProduct->id)->count();
@@ -235,31 +239,31 @@ class HomeController extends Controller
         }
         // End of Pagination using Ajax
 
-        if ($detailedProduct != null && $detailedProduct->published) {
-            if ($request->has('product_referral_code') && addon_is_activated('affiliate_system')) {
-                $affiliate_validation_time = AffiliateConfig::where('type', 'validation_time')->first();
-                $cookie_minute = 30 * 24;
-                if ($affiliate_validation_time) {
-                    $cookie_minute = $affiliate_validation_time->value * 60;
-                }
-                Cookie::queue('product_referral_code', $request->product_referral_code, $cookie_minute);
-                Cookie::queue('referred_product_id', $detailedProduct->id, $cookie_minute);
+        if ($request->has('product_referral_code') && addon_is_activated('affiliate_system')) {
+            $affiliate_validation_time = AffiliateConfig::where('type', 'validation_time')->first();
+            $cookie_minute = 30 * 24;
+            if ($affiliate_validation_time) {
+                $cookie_minute = $affiliate_validation_time->value * 60;
+            }
+            Cookie::queue('product_referral_code', $request->product_referral_code, $cookie_minute);
+            Cookie::queue('referred_product_id', $detailedProduct->id, $cookie_minute);
 
-                $referred_by_user = User::where('referral_code', $request->product_referral_code)->first();
+            $referred_by_user = User::where('referral_code', $request->product_referral_code)->first();
 
+            if ($referred_by_user != null) {
                 $affiliateController = new AffiliateController;
                 $affiliateController->processAffiliateStats($referred_by_user->id, 1, 0, 0, 0);
             }
-            if ($detailedProduct->digital == 1) {
-                return view('frontend.digital_product_details', compact('detailedProduct', 'product_queries', 'total_query'));
-            } else {
-                return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query'));
-            }
         }
-        abort(404);
+
+        if ($detailedProduct->digital == 1) {
+            return view('frontend.digital_product_details', compact('detailedProduct', 'product_queries', 'total_query'));
+        }
+
+        return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query'));
     }
 
-    public function shop($slug)
+    public function shop(string $slug)
     {
         $shop  = Shop::where('slug', $slug)->first();
         if ($shop != null) {
@@ -272,7 +276,7 @@ class HomeController extends Controller
         abort(404);
     }
 
-    public function filter_shop($slug, $type)
+    public function filter_shop(string $slug, string $type)
     {
         $shop  = Shop::where('slug', $slug)->first();
         if ($shop != null && $type != null) {
@@ -295,7 +299,7 @@ class HomeController extends Controller
 
     public function home_settings(Request $request)
     {
-        return view('home_settings.index');
+        return redirect()->route('website.pages');
     }
 
     public function top_10_settings(Request $request)
@@ -321,7 +325,7 @@ class HomeController extends Controller
         }
 
         flash(translate('Top 10 categories and brands have been updated successfully'))->success();
-        return redirect()->route('home_settings.index');
+        return redirect()->route('website.pages');
     }
 
     public function variant_price(Request $request)
@@ -503,7 +507,7 @@ class HomeController extends Controller
         return back();
     }
 
-    public function send_email_change_verification_mail($request, $email)
+    public function send_email_change_verification_mail(Request $request, string $email)
     {
         $response['status'] = 0;
         $response['message'] = 'Unknown';
@@ -517,7 +521,7 @@ class HomeController extends Controller
         $array['sender'] = Auth::user()->name;
         $array['details'] = "Email Second";
 
-        $user = Auth::user();
+        $user = User::findOrFail(Auth::id());
         $user->new_email_verificiation_code = $verification_code;
         $user->save();
 
@@ -563,7 +567,7 @@ class HomeController extends Controller
 
     public function reset_password_with_code(Request $request)
     {
-        
+
         if (($user = User::where('email', $request->email)->where('verification_code', $request->code)->first()) != null) {
             if ($request->password == $request->password_confirmation) {
                 $user->password = Hash::make($request->password);

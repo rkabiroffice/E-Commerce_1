@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\BusinessSetting;
-use Artisan;
-use CoreComponentRepository;
+use Illuminate\Support\Facades\Artisan;
 
 class BusinessSettingsController extends Controller
 {
@@ -31,83 +30,59 @@ class BusinessSettingsController extends Controller
 
     public function general_setting(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
     	return view('backend.setup_configurations.general_settings');
     }
 
     public function activation(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
     	return view('backend.setup_configurations.activation');
     }
 
     public function social_login(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.social_login');
     }
 
     public function smtp_settings(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.smtp_settings');
     }
 
     public function google_analytics(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.google_configuration.google_analytics');
     }
 
     public function google_recaptcha(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.google_configuration.google_recaptcha');
     }
-    
+
     public function google_map(Request $request) {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.google_configuration.google_map');
     }
-    
+
     public function google_firebase(Request $request) {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.google_configuration.google_firebase');
     }
 
     public function facebook_chat(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.facebook_chat');
     }
 
     public function facebook_comment(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.facebook_configuration.facebook_comment');
     }
 
     public function payment_method(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.payment_method');
     }
 
     public function file_system(Request $request)
     {
-        CoreComponentRepository::instantiateShopRepository();
-        CoreComponentRepository::initializeCache();
         return view('backend.setup_configurations.file_system');
     }
 
@@ -331,11 +306,11 @@ class BusinessSettingsController extends Controller
 
     /**
      * overWrite the Env File values.
-     * @param  String type
-     * @param  String value
+     * @param  string $type
+     * @param  string $val
      * @return \Illuminate\Http\Response
      */
-    public function overWriteEnvFile($type, $val)
+    public function overWriteEnvFile(string $type, string $val)
     {
         if(env('DEMO_MODE') != 'On'){
             $path = base_path('.env');
@@ -381,7 +356,7 @@ class BusinessSettingsController extends Controller
         $business_settings->value = json_encode($form);
         if($business_settings->save()){
             Artisan::call('cache:clear');
-            
+
             flash(translate("Verification form updated successfully"))->success();
             return back();
         }
@@ -472,7 +447,7 @@ class BusinessSettingsController extends Controller
         return '1';
     }
 
-    public function updateActivationSettingsInEnv($request)
+    public function updateActivationSettingsInEnv(Request $request)
     {
         if ($request->type == 'FORCE_HTTPS' && $request->value == '1') {
             $this->overWriteEnvFile($request->type, 'On');

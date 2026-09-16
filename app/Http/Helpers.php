@@ -239,7 +239,7 @@ if (!function_exists('discount_in_percentage')) {
 
 //Shows Price on page based on carts
 if (!function_exists('cart_product_price')) {
-    function cart_product_price(array $cart_product, Product $product, bool $formatted = true, bool $tax = true)
+    function cart_product_price(array|\App\Models\Cart $cart_product, Product $product, bool $formatted = true, bool $tax = true)
     {
         if ($product->auction_product == 0) {
             $str = '';
@@ -250,6 +250,8 @@ if (!function_exists('cart_product_price')) {
             $product_stock = $product->stocks->where('variant', $str)->first();
             if ($product_stock) {
                 $price = $product_stock->price;
+            } elseif ($product->digital == 1) {
+                $price = $product->unit_price;
             }
 
 
@@ -298,14 +300,14 @@ if (!function_exists('cart_product_price')) {
 }
 
 if (!function_exists('cart_product_tax')) {
-    function cart_product_tax(array $cart_product, Product $product, bool $formatted = true)
+    function cart_product_tax(array|\App\Models\Cart $cart_product, Product $product, bool $formatted = true)
     {
         $str = '';
         if ($cart_product['variation'] != null) {
             $str = $cart_product['variation'];
         }
         $product_stock = $product->stocks->where('variant', $str)->first();
-        $price = $product_stock->price;
+        $price = $product_stock?->price ?? $product->unit_price;
 
         //discount calculation
         $discount_applicable = false;
@@ -428,8 +430,12 @@ if (!function_exists('carts_product_discount')) {
 }
 
 if (!function_exists('carts_coupon_discount')) {
-    function carts_coupon_discount(string $code, bool $formatted = false)
+    function carts_coupon_discount(?string $code, bool $formatted = false)
     {
+        if ($code === null || $code === '') {
+            return $formatted ? format_price(0) : 0;
+        }
+
         $coupon = Coupon::where('code', $code)->first();
         $coupon_discount = 0;
         if ($coupon != null) {
@@ -795,8 +801,12 @@ function remove_invalid_charcaters(string $str)
     return str_ireplace(array('"'), '\"', $str);
 }
 
-function getShippingCost(array $carts, int $index, string $carrier = '')
+function getShippingCost(array|\Illuminate\Database\Eloquent\Collection $carts, int $index, string $carrier = '')
 {
+    if ($carts instanceof \Illuminate\Database\Eloquent\Collection) {
+        $carts = $carts->all();
+    }
+
     $shipping_type = get_setting('shipping_type');
     $admin_products = array();
     $seller_products = array();
@@ -948,10 +958,16 @@ if (!function_exists('app_timezone')) {
 
 //return file uploaded via uploader
 if (!function_exists('uploaded_asset')) {
-    function uploaded_asset(int|string $id)
+    function uploaded_asset(int|string|null $id)
     {
         if (($asset = \App\Models\Upload::find($id)) != null) {
-            return $asset->external_link == null ? my_asset($asset->file_name) : $asset->external_link;
+            if ($asset->external_link != null) {
+                return $asset->external_link;
+            }
+
+            if (env('FILESYSTEM_DRIVER') == 's3' || file_exists(public_path($asset->file_name))) {
+                return my_asset($asset->file_name);
+            }
         }
         return static_asset('assets/img/placeholder.jpg');
     }
@@ -963,7 +979,7 @@ if (!function_exists('my_asset')) {
         if (env('FILESYSTEM_DRIVER') == 's3') {
             return Storage::url($path);
         } else {
-            return app('url')->asset($path, $secure);
+            return url()->asset($path, $secure);
         }
     }
 }
@@ -971,7 +987,30 @@ if (!function_exists('my_asset')) {
 if (!function_exists('static_asset')) {
     function static_asset(string $path, bool|null $secure = null)
     {
-        return app('url')->asset($path, $secure);
+        return url()->asset($path, $secure);
+    }
+}
+
+// inline a local image as base64 so mPDF doesn't hang fetching it over HTTP from the same server
+if (!function_exists('pdf_image_data')) {
+    function pdf_image_data(int|string|null $id, string $fallbackRelativePath = 'assets/img/logo.png')
+    {
+        $path = null;
+
+        if ($id !== null && ($asset = \App\Models\Upload::find($id)) != null && $asset->external_link == null) {
+            $path = public_path($asset->file_name);
+        }
+
+        if ($path == null || !file_exists($path)) {
+            $path = public_path($fallbackRelativePath);
+        }
+
+        if (!file_exists($path)) {
+            return '';
+        }
+
+        $mime = @mime_content_type($path) ?: 'image/png';
+        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
     }
 }
 

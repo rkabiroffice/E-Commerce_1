@@ -5,18 +5,17 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use GeneaLabs\LaravelSocialiter\Facades\Socialiter;
-use Socialite;
+use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Models\Customer;
 use App\Models\Cart;
 use App\Services\SocialRevoke;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
-use CoreComponentRepository;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use GuzzleHttp\Client;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -263,7 +262,6 @@ class LoginController extends Controller
         }
 
         if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
-            CoreComponentRepository::instantiateShopRepository();
             return redirect()->route('admin.dashboard');
         } elseif (auth()->user()->user_type == 'seller') {
             return redirect()->route('seller.dashboard');
@@ -328,11 +326,11 @@ class LoginController extends Controller
         // if (auth()->user()->provider) {
         //     $social_revoke =  new SocialRevoke;
         //     $revoke_output = $social_revoke->apply(auth()->user()->provider);
-            
+
         //     if ($revoke_output) {
         //     }
         // }
-        
+
         $auth_user = auth()->user();
         $auth_user->customer_products()->delete();
 

@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Utility;
-use Cache;
+use Illuminate\Support\Facades\Cache;
 
 class NagadUtility {
     /**
      * Generate Random string
      */
-    public static function generateRandomString($length = 40)
+    public static function generateRandomString(int $length = 40)
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
@@ -21,7 +21,7 @@ class NagadUtility {
     /**
      * Generate public key
      */
-    public static function EncryptDataWithPublicKey($data)
+    public static function EncryptDataWithPublicKey(string $data)
     {
         $pgPublicKey = env('NAGAD_PG_PUBLIC_KEY');
         $public_key = "-----BEGIN PUBLIC KEY-----\n" . $pgPublicKey . "\n-----END PUBLIC KEY-----";
@@ -35,7 +35,7 @@ class NagadUtility {
     /**
      * Generate signature
      */
-    public static function SignatureGenerate($data)
+    public static function SignatureGenerate(string $data)
     {
         $merchantPrivateKey = env('NAGAD_MERCHANT_PRIVATE_KEY');
         $private_key = "-----BEGIN RSA PRIVATE KEY-----\n" . $merchantPrivateKey . "\n-----END RSA PRIVATE KEY-----";
@@ -68,7 +68,7 @@ class NagadUtility {
         return $ipaddress;
     }
 
-    public static function DecryptDataWithPrivateKey($crypttext)
+    public static function DecryptDataWithPrivateKey(string $crypttext)
     {
         $merchantPrivateKey = env('NAGAD_MERCHANT_PRIVATE_KEY');
         $private_key = "-----BEGIN RSA PRIVATE KEY-----\n" . $merchantPrivateKey . "\n-----END RSA PRIVATE KEY-----";
@@ -76,7 +76,7 @@ class NagadUtility {
         return $plain_text;
     }
 
-    public static function HttpPostMethod($PostURL, $PostData)
+    public static function HttpPostMethod(string $PostURL, array $PostData): array
     {
         $url = curl_init($PostURL);
         $posttoken = json_encode($PostData);
@@ -103,7 +103,7 @@ class NagadUtility {
 
     }
 
-    public static function HttpGet($url)
+    public static function HttpGet(string $url): string|false
     {
         $ch = curl_init();
         $timeout = 10;
