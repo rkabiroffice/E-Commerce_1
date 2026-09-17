@@ -30,6 +30,23 @@ class PosController extends Controller
 
     public function admin_index()
     {
+        $cart = collect(Session::get('pos.cart', []))->filter(function ($cartItem) {
+            return is_array($cartItem) && isset(
+                $cartItem['stock_id'],
+                $cartItem['id'],
+                $cartItem['variant'],
+                $cartItem['quantity'],
+                $cartItem['price'],
+                $cartItem['tax']
+            );
+        });
+
+        if ($cart->isEmpty()) {
+            Session::forget('pos.cart');
+        } else {
+            Session::put('pos.cart', $cart);
+        }
+
         $customers = User::where('user_type', 'customer')->where('email_verified_at', '!=', null)->orderBy('created_at', 'desc')->get();
         return view('backend.pos.index', compact('customers'));
     }
@@ -170,7 +187,8 @@ class PosController extends Controller
     public function updateQuantity(Request $request)
     {
         $cart = $request->session()->get('pos.cart', collect([]));
-        $cart = $cart->map(function ($object, $key) use ($request) {
+        $error = null;
+        $cart = $cart->map(function ($object, $key) use ($request, &$error) {
             if($key == $request->key){
                 $product = Product::find($object['id']);
                 $product_stock = $product->stocks->where('id', $object['stock_id'])->first();
@@ -178,11 +196,17 @@ class PosController extends Controller
                 if($product_stock->qty >= $request->quantity){
                     $object['quantity'] = $request->quantity;
                 }else{
-                    return array('success' => 0, 'message' => translate("This product doesn't have more stock."), 'view' => view('backend.pos.cart')->render());
+                    $error = array('success' => 0, 'message' => translate("This product doesn't have more stock."));
                 }
             }
             return $object;
         });
+
+        if ($error !== null) {
+            $error['view'] = view('backend.pos.cart')->render();
+            return $error;
+        }
+
         $request->session()->put('pos.cart', $cart);
 
         return array('success' => 1, 'message' => '', 'view' => view('backend.pos.cart')->render());

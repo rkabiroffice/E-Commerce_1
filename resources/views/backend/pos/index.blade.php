@@ -57,7 +57,7 @@
 								<i class="las la-truck"></i>
 							</button>
                         </div>
-                    
+
                         <div class="" id="cart-details">
                             <div class="aiz-pos-cart-list mb-4 mt-3 c-scrollbar-light">
                                 @php
@@ -67,6 +67,9 @@
                                 @if (Session::has('pos.cart'))
                                     <ul class="list-group list-group-flush">
                                     @forelse (Session::get('pos.cart') as $key => $cartItem)
+                                        @if (!is_array($cartItem) || !isset($cartItem['price'], $cartItem['quantity'], $cartItem['tax'], $cartItem['stock_id'], $cartItem['variant']))
+                                            @continue
+                                        @endif
                                         @php
                                             $subtotal += $cartItem['price']*$cartItem['quantity'];
                                             $tax += $cartItem['tax']*$cartItem['quantity'];
@@ -246,7 +249,7 @@
                                 </div>
                                 <div class="col-sm-10">
                                     <select class="form-control mb-3 aiz-selectpicker" data-live-search="true" name="state_id" required>
-                        
+
                                     </select>
                                 </div>
                             </div>
@@ -258,7 +261,7 @@
                                 </div>
                                 <div class="col-sm-10">
                                     <select class="form-control mb-3 aiz-selectpicker" data-live-search="true" name="city_id" required>
-                        
+
                                     </select>
                                 </div>
                             </div>
@@ -337,7 +340,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <label class="col-sm-3 control-label" for="trx_id">{{translate('Transaction ID')}}</label>
                         <div class="col-md-9">
@@ -386,16 +389,16 @@
                     }else{
                         AIZ.plugins.notify('danger', data.message);
                     }
-                    
+
                 });
             });
             filterProducts();
             getShippingAddress();
         });
-        
+
         $("#confirm-address").click(function (){
             var data = new FormData($('#shipping_form')[0]);
-            
+
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': AIZ.data.csrf
@@ -551,19 +554,19 @@
             var offline_payment_amount = $('input[name=offline_payment_amount]').val();
             var offline_trx_id = $('input[name=trx_id]').val();
             var offline_payment_proof = $('input[name=payment_proof]').val();
-            
+
             $.post('{{ route('pos.order_place') }}',{
-                _token                  : AIZ.data.csrf, 
+                _token                  : AIZ.data.csrf,
                 user_id                 : user_id,
-                shipping_address        : shipping_address, 
-                payment_type            : payment_type, 
-                shipping                : shipping, 
+                shipping_address        : shipping_address,
+                payment_type            : payment_type,
+                shipping                : shipping,
                 discount                : discount,
                 offline_payment_method  : offline_payment_method,
                 offline_payment_amount  : offline_payment_amount,
                 offline_trx_id          : offline_trx_id,
                 offline_payment_proof   : offline_payment_proof
-                
+
             }, function(data){
                 if(data.success == 1){
                     AIZ.plugins.notify('success', data.message );
@@ -586,7 +589,7 @@
             var state_id = $(this).val();
             get_city(state_id);
         });
-        
+
         function get_states(country_id) {
             $('[name="state"]').html("");
             $.ajax({

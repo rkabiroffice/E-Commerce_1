@@ -49,17 +49,17 @@ class OrderController extends Controller
 
         if (
             Route::currentRouteName() == 'inhouse_orders.index' &&
-            $current_user->hasPermissionTo('view_inhouse_orders')
+            $current_user->can('view_inhouse_orders')
         ) {
             $orders = $orders->where('orders.seller_id', '=', $admin_user_id);
         } else if (
             Route::currentRouteName() == 'seller_orders.index' &&
-            $current_user->hasPermissionTo('view_seller_orders')
+            $current_user->can('view_seller_orders')
         ) {
             $orders = $orders->where('orders.seller_id', '!=', $admin_user_id);
         } else if (
             Route::currentRouteName() == 'pick_up_point.index' &&
-            $current_user->hasPermissionTo('view_pickup_point_orders')
+            $current_user->can('view_pickup_point_orders')
         ) {
             $orders->where('shipping_type', 'pickup_point')->orderBy('code', 'desc');
             if (
@@ -71,7 +71,7 @@ class OrderController extends Controller
             }
         } else if (
             Route::currentRouteName() == 'all_orders.index' &&
-            $current_user->hasPermissionTo('view_all_orders')
+            $current_user->can('view_all_orders')
         ) {
         } else {
             abort(403);
