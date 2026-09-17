@@ -209,7 +209,7 @@ class PaymentTypesController
             $haveDigitalProduct = false;
 
             if ($mode == "order") {
-                $carts = auth()->user()->carts;
+                $carts = api_user()->carts;
 
                 foreach ($carts as $key => $cart) {
                     $haveDigitalProduct =  $cart->product->digital == 1;

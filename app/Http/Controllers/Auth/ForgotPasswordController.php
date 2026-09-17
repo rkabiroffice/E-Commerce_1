@@ -10,7 +10,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use App\Models\User;
 use App\Mail\SecondEmailVerifyMailManager;
 use App\Utility\SmsUtility;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 
 class ForgotPasswordController extends Controller
 {
@@ -25,6 +25,7 @@ class ForgotPasswordController extends Controller
     |
     */
 
+    /** @noinspection PhpUndefinedClassInspection */
     use SendsPasswordResetEmails;
 
     /**

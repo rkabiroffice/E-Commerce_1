@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Unicodeveloper\Paystack\Facades\Paystack;
 use App\Models\CombinedOrder;
 use App\Models\SellerPackage;
 use App\Models\CustomerPackage;
@@ -18,6 +17,12 @@ use App\Http\Controllers\CustomerPackageController;
 
 class PaystackController extends Controller
 {
+    private function paystack()
+    {
+        $paystackClass = 'Unicodeveloper\\Paystack\\Paystack';
+        return new $paystackClass;
+    }
+
     public function pay(Request $request)
     {
         $post_data = array();
@@ -34,9 +39,9 @@ class PaystackController extends Controller
                 'amount' => round($combined_order->grand_total * 100),
                 'currency' => 'NGN',
                 'metadata' => json_encode($array),
-                'reference' => Paystack::genTranxRef(),
+                'reference' => $this->paystack()->genTranxRef(),
             ]);
-            return Paystack::getAuthorizationUrl()->redirectNow();
+            return $this->paystack()->getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'wallet_payment') {
             $post_data['payment_method'] = Session::get('payment_data')['payment_method'];
             $array = ['custom_fields' => $post_data];
@@ -47,9 +52,9 @@ class PaystackController extends Controller
                 'amount' => round(Session::get('payment_data')['amount'] * 100),
                 'currency' => 'NGN',
                 'metadata' => json_encode($array),
-                'reference' => Paystack::genTranxRef(),
+                'reference' => $this->paystack()->genTranxRef(),
             ]);
-            return Paystack::getAuthorizationUrl()->redirectNow();
+            return $this->paystack()->getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'customer_package_payment') {
             $post_data['customer_package_id'] = Session::get('payment_data')['customer_package_id'];
             $array = ['custom_fields' => $post_data];
@@ -61,9 +66,9 @@ class PaystackController extends Controller
                 'amount' => round($customer_package->amount * 100),
                 'currency' => 'NGN',
                 'metadata' => json_encode($array),
-                'reference' => Paystack::genTranxRef(),
+                'reference' => $this->paystack()->genTranxRef(),
             ]);
-            return Paystack::getAuthorizationUrl()->redirectNow();
+            return $this->paystack()->getAuthorizationUrl()->redirectNow();
         } elseif (Session::get('payment_type') == 'seller_package_payment') {
             $post_data['seller_package_id'] = Session::get('payment_data')['seller_package_id'];
             $post_data['payment_method'] = Session::get('payment_data')['payment_method'];
@@ -76,15 +81,15 @@ class PaystackController extends Controller
                 'amount' => round($seller_package->amount * 100),
                 'currency' => 'NGN',
                 'metadata' => json_encode($array),
-                'reference' => Paystack::genTranxRef(),
+                'reference' => $this->paystack()->genTranxRef(),
             ]);
-            return Paystack::getAuthorizationUrl()->redirectNow();
+            return $this->paystack()->getAuthorizationUrl()->redirectNow();
         }
     }
 
     public function paystackNewCallback()
     {
-        Paystack::getCallbackData();
+        $this->paystack()->getCallbackData();
     }
 
 
@@ -97,7 +102,7 @@ class PaystackController extends Controller
         // Now you have the payment details,
         // you can store the authorization_code in your db to allow for recurrent subscriptions
         // you can then redirect or do whatever you want
-        $payment = Paystack::getPaymentData();
+        $payment = $this->paystack()->getPaymentData();
 
         if ($payment['data']['metadata']['custom_fields']) {
             $payment_type = $payment['data']['metadata']['custom_fields']['payment_type'];

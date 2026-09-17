@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
@@ -58,16 +59,16 @@ class CustomerController extends Controller
             'email'         => 'required|unique:users|email',
             'phone'         => 'required|unique:users',
         ]);
-        
+
         $response['status'] = 'Error';
-        
+
         $user = User::create($request->all());
-        
+
         $customer = new Customer;
-        
+
         $customer->user_id = $user->id;
         $customer->save();
-        
+
         if (isset($user->id)) {
             $html = '';
             $html .= '<option value="">
@@ -80,11 +81,11 @@ class CustomerController extends Controller
                             </option>';
                 }
             }
-            
+
             $response['status'] = 'Success';
             $response['html'] = $html;
         }
-        
+
         echo json_encode($response);
     }
 
@@ -131,35 +132,35 @@ class CustomerController extends Controller
     public function destroy($id)
     {
         $customer = User::findOrFail($id);
-        $customer->customer_products()->delete(); 
+        $customer->customer_products()->delete();
 
         User::destroy($id);
         flash(translate('Customer has been deleted successfully'))->success();
         return redirect()->route('customers.index');
     }
-    
+
     public function bulk_customer_delete(Request $request) {
         if($request->id) {
             foreach ($request->id as $customer_id) {
                 $customer = User::findOrFail($customer_id);
-                $customer->customer_products()->delete(); 
+                $customer->customer_products()->delete();
                 $this->destroy($customer_id);
             }
         }
-        
+
         return 1;
     }
 
-    public function login($id)
+    public function login(int|string $id)
     {
         $user = User::findOrFail(decrypt($id));
 
-        auth()->login($user, true);
+        Auth::login($user, true);
 
         return redirect()->route('dashboard');
     }
 
-    public function ban($id) {
+    public function ban(int|string $id) {
         $user = User::findOrFail(decrypt($id));
 
         if($user->banned == 1) {
@@ -171,7 +172,7 @@ class CustomerController extends Controller
         }
 
         $user->save();
-        
+
         return back();
     }
 }

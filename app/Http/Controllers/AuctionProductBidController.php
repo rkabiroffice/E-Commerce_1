@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AuctionProductBid;
 use App\Models\Product;
-use Auth;
-use Mail;
-use DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Mail\AuctionBidMailManager;
 
 
@@ -80,15 +80,15 @@ class AuctionProductBidController extends Controller
         return back();
     }
 
-   
-    public function product_bids_admin($id)
+
+    public function product_bids_admin(int $id)
     {
         $product = Product::where('id', $id)->first();
         $bids = AuctionProductBid::latest()->where('product_id', $id)->paginate(15);
         return view('auction.auction_products.bids', compact('bids', 'product'));
     }
 
-    public function product_bids_seller($id)
+    public function product_bids_seller(int $id)
     {
         $product = Product::where('id', $id)->first();
         $bids = AuctionProductBid::latest()->where('product_id', $id)->paginate(15);
@@ -124,14 +124,14 @@ class AuctionProductBidController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function bid_destroy_admin($id)
+    public function bid_destroy_admin(int $id)
     {
         AuctionProductBid::destroy($id);
         flash(translate('Bid deleted successfully'))->success();
         return back();
     }
 
-    public function bid_destroy_seller($id)
+    public function bid_destroy_seller(int $id)
     {
         AuctionProductBid::destroy($id);
         flash(translate('Bid deleted successfully'))->success();

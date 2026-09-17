@@ -17,7 +17,7 @@ class WithdrawRequestController extends Controller
      */
     public function index()
     {
-        $seller_withdraw_requests = SellerWithdrawRequest::where('user_id', auth()->user()->id)->latest()->paginate(10);
+        $seller_withdraw_requests = SellerWithdrawRequest::where('user_id', api_user()->id)->latest()->paginate(10);
         return SellerWithdrawResource::collection($seller_withdraw_requests);
     }
 
@@ -31,10 +31,10 @@ class WithdrawRequestController extends Controller
     public function store(Request $request)
     {
 
-        if (auth()->user()->shop->admin_to_pay > 5) {
+        if (api_user()->shop->admin_to_pay > 5) {
             if ($request->amount >= get_setting('minimum_seller_amount_withdraw') && $request->amount <= Auth::user()->shop->admin_to_pay) {
                 $seller_withdraw_request = new SellerWithdrawRequest;
-                $seller_withdraw_request->user_id = auth()->user()->id;
+                $seller_withdraw_request->user_id = api_user()->id;
                 $seller_withdraw_request->amount = $request->amount;
                 $seller_withdraw_request->message = $request->message;
                 $seller_withdraw_request->status = '0';

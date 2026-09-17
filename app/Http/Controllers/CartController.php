@@ -14,7 +14,7 @@ class CartController extends Controller
 {
     public function index(Request $request)
     {
-        if(auth()->user() != null) {
+        if(Auth::check()) {
             $user_id = Auth::user()->id;
             if($request->session()->get('temp_user_id')) {
                 Cart::where('temp_user_id', $request->session()->get('temp_user_id'))
@@ -57,7 +57,7 @@ class CartController extends Controller
         $carts = array();
         $data = array();
 
-        if(auth()->user() != null) {
+        if(Auth::check()) {
             $user_id = Auth::user()->id;
             $data['user_id'] = $user_id;
             $carts = Cart::where('user_id', $user_id)->get();
@@ -235,7 +235,7 @@ class CartController extends Controller
                 Cart::create($data);
             }
 
-            if(auth()->user() != null) {
+            if(Auth::check()) {
                 $user_id = Auth::user()->id;
                 $carts = Cart::where('user_id', $user_id)->get();
             } else {
@@ -273,7 +273,7 @@ class CartController extends Controller
             if(count($carts) == 0){
                 Cart::create($data);
             }
-            if(auth()->user() != null) {
+            if(Auth::check()) {
                 $user_id = Auth::user()->id;
                 $carts = Cart::where('user_id', $user_id)->get();
             } else {
@@ -293,7 +293,7 @@ class CartController extends Controller
     public function removeFromCart(Request $request)
     {
         Cart::destroy($request->id);
-        if(auth()->user() != null) {
+        if(Auth::check()) {
             $user_id = Auth::user()->id;
             $carts = Cart::where('user_id', $user_id)->get();
         } else {
@@ -356,7 +356,7 @@ class CartController extends Controller
             $cartItem->save();
         }
 
-        if(auth()->user() != null) {
+        if(Auth::check()) {
             $user_id = Auth::user()->id;
             $carts = Cart::where('user_id', $user_id)->get();
         } else {

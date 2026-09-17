@@ -10,7 +10,7 @@ use App\Models\Product;
 use App\Models\Shop;
 use Illuminate\Http\Request;
 use App\Utility\SearchUtility;
-use Cache;
+use Illuminate\Support\Facades\Cache;
 
 class ShopController extends Controller
 {
@@ -29,32 +29,32 @@ class ShopController extends Controller
         //return new ShopCollection($shop_query->paginate(10));
     }
 
-    public function info($id)
+    public function info(int|string $id)
     {
         return new ShopDetailsCollection(Shop::where('id', $id)->first());
     }
 
-    public function shopOfUser($id)
+    public function shopOfUser(int|string $id)
     {
         return new ShopCollection(Shop::where('user_id', $id)->get());
     }
 
-    public function allProducts($id)
+    public function allProducts(int|string $id)
     {
         $shop = Shop::findOrFail($id);
         return new ProductCollection(Product::where('user_id', $shop->user_id)->where('published',1)->latest()->paginate(10));
     }
 
-    public function topSellingProducts($id)
+    public function topSellingProducts(int|string $id)
     {
         $shop = Shop::findOrFail($id);
-        
+
         return Cache::remember("app.top_selling_products-$id", 86400, function () use ($shop){
             return new ProductMiniCollection(Product::where('user_id', $shop->user_id)->where('published',1)->orderBy('num_of_sale', 'desc')->limit(10)->get());
         });
     }
 
-    public function featuredProducts($id)
+    public function featuredProducts(int|string $id)
     {
         $shop = Shop::findOrFail($id);
 
@@ -63,7 +63,7 @@ class ShopController extends Controller
         });
     }
 
-    public function newProducts($id)
+    public function newProducts(int|string $id)
     {
         $shop = Shop::findOrFail($id);
 
@@ -72,7 +72,7 @@ class ShopController extends Controller
         });
     }
 
-    public function brands($id)
+    public function brands(int|string $id)
     {
 
     }

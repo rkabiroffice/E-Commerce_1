@@ -96,9 +96,9 @@ class HomeController extends Controller
         if ($user != null) {
             if (Hash::check($request->password, $user->password)) {
                 if ($request->has('remember')) {
-                    auth()->login($user, true);
+                    Auth::login($user, true);
                 } else {
-                    auth()->login($user, false);
+                    Auth::login($user, false);
                 }
             } else {
                 flash(translate('Invalid email or password!'))->warning();
@@ -551,7 +551,7 @@ class HomeController extends Controller
                 $user->new_email_verificiation_code = null;
                 $user->save();
 
-                auth()->login($user, true);
+                Auth::login($user, true);
 
                 flash(translate('Email Changed successfully'))->success();
                 if ($user->user_type == 'seller') {
@@ -574,11 +574,11 @@ class HomeController extends Controller
                 $user->email_verified_at = date('Y-m-d h:m:s');
                 $user->save();
                 event(new PasswordReset($user));
-                auth()->login($user, true);
+                Auth::login($user, true);
 
                 flash(translate('Password updated successfully'))->success();
 
-                if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
+                if (Auth::user()->user_type == 'admin' || Auth::user()->user_type == 'staff') {
                     return redirect()->route('admin.dashboard');
                 }
                 return redirect()->route('home');

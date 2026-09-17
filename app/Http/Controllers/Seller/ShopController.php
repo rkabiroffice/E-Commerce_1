@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Models\BusinessSetting;
 use Illuminate\Http\Request;
 use App\Models\Shop;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {

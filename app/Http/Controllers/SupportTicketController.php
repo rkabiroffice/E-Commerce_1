@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\User;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use App\Models\TicketReply;
 use App\Mail\SupportMailManager;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 
 class SupportTicketController extends Controller
 {
@@ -78,7 +78,7 @@ class SupportTicketController extends Controller
 
     }
 
-    public function send_support_mail_to_admin($ticket){
+    public function send_support_mail_to_admin(Ticket $ticket){
         $array['view'] = 'emails.support';
         $array['subject'] = 'Support ticket Code is:- '.$ticket->code;
         $array['from'] = env('MAIL_FROM_ADDRESS');
@@ -96,7 +96,7 @@ class SupportTicketController extends Controller
         }
     }
 
-    public function send_support_reply_email_to_user($ticket, $tkt_reply){
+    public function send_support_reply_email_to_user(Ticket $ticket, TicketReply $tkt_reply){
         $array['view'] = 'emails.support';
         $array['subject'] = 'Support ticket Code is:- '.$ticket->code;
         $array['from'] = env('MAIL_FROM_ADDRESS');
@@ -159,7 +159,7 @@ class SupportTicketController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $ticket = Ticket::findOrFail(decrypt($id));
         $ticket->client_viewed = 1;
@@ -168,7 +168,7 @@ class SupportTicketController extends Controller
         return view('frontend.user.support_ticket.show', compact('ticket','ticket_replies'));
     }
 
-    public function admin_show($id)
+    public function admin_show(int|string $id)
     {
         $ticket = Ticket::findOrFail(decrypt($id));
         $ticket->viewed = 1;
@@ -182,7 +182,7 @@ class SupportTicketController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(int|string $id)
     {
         //
     }
@@ -194,7 +194,7 @@ class SupportTicketController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
         //
     }
@@ -205,7 +205,7 @@ class SupportTicketController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         //
     }

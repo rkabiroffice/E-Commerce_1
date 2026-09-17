@@ -25,7 +25,7 @@ class ShopController extends Controller
      */
     public function index()
     {
-        $shop = Auth::user()->shop;
+        $shop = User::findOrFail(Auth::id())->shop;
         return view('seller.shop', compact('shop'));
     }
 
@@ -76,7 +76,7 @@ class ShopController extends Controller
                 return back();
             }
         } else {
-            $user = Auth::user();
+            $user = User::findOrFail(Auth::id());
             if ($user->customer != null) {
                 $user->customer->delete();
             }
@@ -92,7 +92,7 @@ class ShopController extends Controller
             $shop->slug = preg_replace('/\s+/', '-', $request->shop_name);
 
             if ($shop->save()) {
-                auth()->login($user, false);
+                Auth::login($user, false);
                 if (BusinessSetting::where('type', 'email_verification')->first()->value != 1) {
                     $user->email_verified_at = date('Y-m-d H:m:s');
                     $user->save();

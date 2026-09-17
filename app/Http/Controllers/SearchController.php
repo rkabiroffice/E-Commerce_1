@@ -90,10 +90,10 @@ class SearchController extends Controller
             $case1 = $query . '%';
             $case2 = '%' . $query . '%';
 
-            $products->orderByRaw("CASE 
-                WHEN name LIKE '$case1' THEN 1 
-                WHEN name LIKE '$case2' THEN 2 
-                ELSE 3 
+            $products->orderByRaw("CASE
+                WHEN name LIKE '$case1' THEN 1
+                WHEN name LIKE '$case2' THEN 2
+                ELSE 3
                 END");
         }
 
@@ -142,7 +142,7 @@ class SearchController extends Controller
         return $this->index($request);
     }
 
-    public function listingByCategory(Request $request, $category_slug)
+    public function listingByCategory(Request $request, string $category_slug)
     {
         $category = Category::where('slug', $category_slug)->first();
         if ($category != null) {
@@ -151,7 +151,7 @@ class SearchController extends Controller
         abort(404);
     }
 
-    public function listingByBrand(Request $request, $brand_slug)
+    public function listingByBrand(Request $request, string $brand_slug)
     {
         $brand = Brand::where('slug', $brand_slug)->first();
         if ($brand != null) {
@@ -167,7 +167,7 @@ class SearchController extends Controller
         $query = $request->search;
         $products = Product::where('published', 1)->where('tags', 'like', '%' . $query . '%')->get();
         foreach ($products as $key => $product) {
-            foreach (explode(',', $product->tags) as $key => $tag) {
+            foreach (explode(',', $product->tags) as $tagKey => $tag) {
                 if (stripos($tag, $query) !== false) {
                     if (sizeof($keywords) > 5) {
                         break;
@@ -198,10 +198,10 @@ class SearchController extends Controller
         $case1 = $query . '%';
         $case2 = '%' . $query . '%';
 
-        $products_query->orderByRaw("CASE 
-                WHEN name LIKE '$case1' THEN 1 
-                WHEN name LIKE '$case2' THEN 2 
-                ELSE 3 
+        $products_query->orderByRaw("CASE
+                WHEN name LIKE '$case1' THEN 1
+                WHEN name LIKE '$case2' THEN 2
+                ELSE 3
                 END");
         $products = $products_query->limit(3)->get();
 

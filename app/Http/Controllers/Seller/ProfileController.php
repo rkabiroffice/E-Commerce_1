@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Seller;
 
 use App\Http\Requests\SellerProfileRequest;
 use App\Models\User;
-use Auth;
-use Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -17,7 +17,7 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $addresses = $user->addresses; 
+        $addresses = $user->addresses;
         return view('seller.profile.index', compact('user','addresses'));
     }
 
@@ -42,7 +42,7 @@ class ProfileController extends Controller
         if($request->new_password != null && ($request->new_password == $request->confirm_password)){
             $user->password = Hash::make($request->new_password);
         }
-        
+
         $user->avatar_original = $request->photo;
 
         $shop = $user->shop;

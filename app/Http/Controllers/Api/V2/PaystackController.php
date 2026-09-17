@@ -9,7 +9,7 @@ use App\Http\Controllers\WalletController;
 use App\Models\CombinedOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Paystack;
+use Unicodeveloper\Paystack\Facades\Paystack;
 
 class PaystackController extends Controller
 {
@@ -24,10 +24,12 @@ class PaystackController extends Controller
         $user_id = $request->user_id;
 
         $user = User::find($user_id);
-        $request->email = $user->email;
-        $request->amount = round($amount * 100);
-        $request->currency = env('PAYSTACK_CURRENCY_CODE', 'NGN');
-        $request->reference = Paystack::genTranxRef();
+        $request->merge([
+            'email' => $user->email,
+            'amount' => round($amount * 100),
+            'currency' => env('PAYSTACK_CURRENCY_CODE', 'NGN'),
+            'reference' => Paystack::genTranxRef(),
+        ]);
         return Paystack::getAuthorizationUrl()->redirectNow();
     }
 

@@ -18,7 +18,7 @@ class ChatController extends Controller
 
     public function conversations()
     {
-        $conversations = Conversation::where('sender_id', auth()->user()->id)->latest('id')->paginate(10);
+        $conversations = Conversation::where('sender_id', api_user()->id)->latest('id')->paginate(10);
         return new ConversationCollection($conversations);
     }
 
@@ -32,7 +32,7 @@ class ChatController extends Controller
     {
         $message = new Message;
         $message->conversation_id = $request->conversation_id;
-        $message->user_id = auth()->user()->id;
+        $message->user_id = api_user()->id;
         $message->message = $request->message;
         $message->save();
         $conversation = $message->conversation;
@@ -55,7 +55,7 @@ class ChatController extends Controller
     public function create_conversation(Request $request)
     {
         $seller_user = Product::findOrFail($request->product_id)->user;
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         $conversation = new Conversation;
         $conversation->sender_id = $user->id;
         $conversation->receiver_id = Product::findOrFail($request->product_id)->user->id;

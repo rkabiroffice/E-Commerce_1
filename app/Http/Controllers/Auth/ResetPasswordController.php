@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ResetPasswordController extends Controller
 {
@@ -19,6 +20,7 @@ class ResetPasswordController extends Controller
     |
     */
 
+    /** @noinspection PhpUndefinedClassInspection */
     use ResetsPasswords;
 
     /**
@@ -45,9 +47,9 @@ class ResetPasswordController extends Controller
      * @param  string  $response
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    protected function sendResetResponse(Request $request, $response)
+    protected function sendResetResponse(Request $request, string $response)
     {
-        if(auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff')
+        if(Auth::user()->user_type == 'admin' || Auth::user()->user_type == 'staff')
         {
             return redirect()->route('admin.dashboard')
                             ->with('status', trans($response));

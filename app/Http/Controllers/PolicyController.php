@@ -8,7 +8,7 @@ use App\Models\Policy;
 class PolicyController extends Controller
 {
 
-    public function index($type)
+    public function index(string $type)
     {
         $policy = Policy::where('name', $type)->first();
         return view('policies.index', compact('policy'));

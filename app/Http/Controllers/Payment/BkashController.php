@@ -11,11 +11,11 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CheckoutController;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 class BkashController extends Controller
 {
-    private $base_url;
+    private string $base_url;
     public function __construct()
     {
         if(get_setting('bkash_sandbox', 1)){

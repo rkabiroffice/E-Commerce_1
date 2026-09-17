@@ -12,8 +12,8 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CheckoutController;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class InstamojoController extends Controller
 {
@@ -27,8 +27,9 @@ class InstamojoController extends Controller
                 // live_url
                 $endPoint = 'https://www.instamojo.com/api/1.1/';
             }
-            
-            $api = new \Instamojo\Instamojo(
+
+            $instamojoClass = 'Instamojo\\Instamojo';
+            $api = new $instamojoClass(
                 env('IM_API_KEY'),
                 env('IM_AUTH_TOKEN'),
                 $endPoint
@@ -59,7 +60,7 @@ class InstamojoController extends Controller
             elseif (Session::get('payment_type') == 'wallet_payment') {
                 if (preg_match_all('/^(?:(?:\+|0{0,2})91(\s*[\ -]\s*)?|[0]?)?[789]\d{9}|(\d[ -]?){10}\d$/im', Auth::user()->phone)) {
                     try {
-                        
+
                         $response = $api->paymentRequestCreate(array(
                             "purpose" => ucfirst(str_replace('_', ' ', Session::get('payment_type'))),
                             "amount" => round(Session::get('payment_data')['amount']),
@@ -77,7 +78,7 @@ class InstamojoController extends Controller
                     flash('Please add phone number to your profile')->warning();
                     return redirect()->route('profile');
                 }
-                
+
             }
             elseif (Session::get('payment_type') == 'customer_package_payment') {
                     $customer_package = CustomerPackage::findOrFail(Session::get('payment_data')['customer_package_id']);
@@ -124,7 +125,7 @@ class InstamojoController extends Controller
                 }
             }
         }
-        
+
     }
 
 // success response method.
@@ -137,7 +138,8 @@ class InstamojoController extends Controller
              $endPoint = 'https://www.instamojo.com/api/1.1/';
          }
 
-         $api = new \Instamojo\Instamojo(
+         $instamojoClass = 'Instamojo\\Instamojo';
+         $api = new $instamojoClass(
              env('IM_API_KEY'),
              env('IM_AUTH_TOKEN'),
              $endPoint

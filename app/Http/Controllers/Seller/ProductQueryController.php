@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductQuery;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class ProductQueryController extends Controller
@@ -20,7 +20,7 @@ class ProductQueryController extends Controller
     /**
      * Retrieve specific query using query id.
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $query = ProductQuery::find(decrypt($id));
         return view('seller.product_query.show', compact('query'));
@@ -29,7 +29,7 @@ class ProductQueryController extends Controller
      * Store reply against the question from seller panel
      */
 
-    public function reply(Request $request, $id)
+    public function reply(Request $request, int|string $id)
     {
         $this->validate($request, [
             'reply' => 'required',

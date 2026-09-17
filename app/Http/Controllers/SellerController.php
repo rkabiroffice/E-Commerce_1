@@ -12,6 +12,7 @@ use App\Models\OrderDetail;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\EmailVerificationNotification;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class SellerController extends Controller
 {
@@ -199,13 +200,13 @@ class SellerController extends Controller
         return 1;
     }
 
-    public function show_verification_request($id)
+    public function show_verification_request(int|string $id)
     {
         $shop = Shop::findOrFail($id);
         return view('backend.sellers.verification', compact('shop'));
     }
 
-    public function approve_seller($id)
+    public function approve_seller(int|string $id)
     {
         $shop = Shop::findOrFail($id);
         $shop->verification_status = 1;
@@ -218,7 +219,7 @@ class SellerController extends Controller
         return back();
     }
 
-    public function reject_seller($id)
+    public function reject_seller(int|string $id)
     {
         $shop = Shop::findOrFail($id);
         $shop->verification_status = 0;
@@ -256,16 +257,16 @@ class SellerController extends Controller
         return 0;
     }
 
-    public function login($id)
+    public function login(int|string $id)
     {
         $shop = Shop::findOrFail(decrypt($id));
         $user  = $shop->user;
-        auth()->login($user, true);
+        Auth::login($user, true);
 
         return redirect()->route('seller.dashboard');
     }
 
-    public function ban($id)
+    public function ban(int|string $id)
     {
         $shop = Shop::findOrFail($id);
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use GeneaLabs\LaravelSocialiter\Facades\Socialiter;
-use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Models\Customer;
 use App\Models\Cart;
@@ -19,49 +18,45 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
+    private function socialite()
+    {
+        $socialiteClass = 'Laravel\\Socialite\\Facades\\Socialite';
+        return new $socialiteClass;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Login Controller
     |--------------------------------------------------------------------------
     |
     | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
+    | redirecting them to your home screen. The controller uses a
+    | trait to conveniently provide its functionality to your applications.
     |
     */
-
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    /*protected $redirectTo = '/';*/
-
 
     /**
-     * Redirect the user to the Google authentication page.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function redirectToProvider($provider)
+    * Redirect the user to the Google authentication page.
+    */
+    public function redirectToProvider(string $provider)
     {
         if (request()->get('query') == 'mobile_app') {
             request()->session()->put('login_from', 'mobile_app');
         }
         if ($provider == 'apple') {
-            return Socialite::driver("sign-in-with-apple")
+            return $this->socialite()->driver("sign-in-with-apple")
                 ->scopes(["name", "email"])
                 ->redirect();
         }
-        return Socialite::driver($provider)->redirect();
+        return $this->socialite()->driver($provider)->redirect();
     }
 
     public function handleAppleCallback(Request $request)
     {
         try {
-            $user = Socialite::driver("sign-in-with-apple")->user();
+            $user = $this->socialite()->driver("sign-in-with-apple")->user();
         } catch (\Exception $e) {
             flash("Something Went wrong. Please try again.")->error();
             return redirect()->route('user.login');
@@ -77,9 +72,8 @@ class LoginController extends Controller
             }
             $existingUserByProviderId->save();
             //proceed to login
-            auth()->login($existingUserByProviderId, true);
+            Auth::login($existingUserByProviderId, true);
         } else {
-            //check if email exist
             $existing_or_new_user = User::firstOrNew([
                 'email' => $user->email
             ]);
@@ -97,13 +91,13 @@ class LoginController extends Controller
             }
             $existing_or_new_user->save();
 
-            auth()->login($existing_or_new_user, true);
+            Auth::login($existing_or_new_user, true);
         }
 
         if (session('temp_user_id') != null) {
             Cart::where('temp_user_id', session('temp_user_id'))
                 ->update([
-                    'user_id' => auth()->user()->id,
+                    'user_id' => Auth::id(),
                     'temp_user_id' => null
                 ]);
 
@@ -112,58 +106,48 @@ class LoginController extends Controller
 
         if (session('link') != null) {
             return redirect(session('link'));
-        } else {
-            if (auth()->user()->user_type == 'seller') {
-                return redirect()->route('seller.dashboard');
-            }
-            return redirect()->route('dashboard');
         }
+
+        if (Auth::user()->user_type == 'seller') {
+            return redirect()->route('seller.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
     /**
      * Obtain the user information from Google.
      *
      * @return \Illuminate\Http\Response
      */
-    public function handleProviderCallback(Request $request, $provider)
+    public function handleProviderCallback(Request $request, string $provider)
     {
         if (session('login_from') == 'mobile_app') {
             return $this->mobileHandleProviderCallback($request, $provider);
         }
+
         try {
-            if ($provider == 'twitter') {
-                $user = Socialite::driver('twitter')->user();
-            } else {
-                $user = Socialite::driver($provider)->stateless()->user();
-            }
+            $user = $provider == 'twitter'
+                ? $this->socialite()->driver('twitter')->user()
+                : $this->socialite()->driver($provider)->stateless()->user();
         } catch (\Exception $e) {
             flash("Something Went wrong. Please try again.")->error();
             return redirect()->route('user.login');
         }
 
-        //check if provider_id exist
         $existingUserByProviderId = User::where('provider_id', $user->id)->first();
-
         if ($existingUserByProviderId) {
             $existingUserByProviderId->access_token = $user->token;
             $existingUserByProviderId->save();
-            //proceed to login
-            auth()->login($existingUserByProviderId, true);
+            Auth::login($existingUserByProviderId, true);
         } else {
-            //check if email exist
             $existingUser = User::where('email', '!=', null)->where('email', $user->email)->first();
-
             if ($existingUser) {
-                //update provider_id
-                $existing_User = $existingUser;
-                $existing_User->provider_id = $user->id;
-                $existing_User->provider = $provider;
-                $existing_User->access_token = $user->token;
-                $existing_User->save();
-
-                //proceed to login
-                auth()->login($existing_User, true);
+                $existingUser->provider_id = $user->id;
+                $existingUser->provider = $provider;
+                $existingUser->access_token = $user->token;
+                $existingUser->save();
+                Auth::login($existingUser, true);
             } else {
-                //create a new user
                 $newUser = new User;
                 $newUser->name = $user->name;
                 $newUser->email = $user->email;
@@ -172,32 +156,24 @@ class LoginController extends Controller
                 $newUser->provider = $provider;
                 $newUser->access_token = $user->token;
                 $newUser->save();
-                //proceed to login
-                auth()->login($newUser, true);
+                Auth::login($newUser, true);
             }
         }
 
         if (session('temp_user_id') != null) {
-            Cart::where('temp_user_id', session('temp_user_id'))
-                ->update([
-                    'user_id' => auth()->user()->id,
-                    'temp_user_id' => null
-                ]);
-
+            Cart::where('temp_user_id', session('temp_user_id'))->update([
+                'user_id' => Auth::id(),
+                'temp_user_id' => null,
+            ]);
             Session::forget('temp_user_id');
         }
 
-        if (session('link') != null) {
-            return redirect(session('link'));
-        } else {
-            if (auth()->user()->user_type == 'seller') {
-                return redirect()->route('seller.dashboard');
-            }
-            return redirect()->route('dashboard');
-        }
+        return session('link')
+            ? redirect(session('link'))
+            : redirect()->route(Auth::user()->user_type == 'seller' ? 'seller.dashboard' : 'dashboard');
     }
 
-    public function mobileHandleProviderCallback($request, $provider)
+    public function mobileHandleProviderCallback(Request $request, string $provider)
     {
         $return_provider = '';
         $result = false;
@@ -245,7 +221,7 @@ class LoginController extends Controller
 
     /**
      * Check user's role and redirect user based on their role
-     * @return
+    * @return \Symfony\Component\HttpFoundation\Response|null
      */
     public function authenticated()
     {
@@ -253,7 +229,7 @@ class LoginController extends Controller
             Cart::where('temp_user_id', session('temp_user_id'))
                 ->update(
                     [
-                        'user_id' => auth()->user()->id,
+                        'user_id' => Auth::id(),
                         'temp_user_id' => null
                     ]
                 );
@@ -261,9 +237,9 @@ class LoginController extends Controller
             Session::forget('temp_user_id');
         }
 
-        if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
+        if (Auth::user()->user_type == 'admin' || Auth::user()->user_type == 'staff') {
             return redirect()->route('admin.dashboard');
-        } elseif (auth()->user()->user_type == 'seller') {
+        } elseif (Auth::user()->user_type == 'seller') {
             return redirect()->route('seller.dashboard');
         } else {
 
@@ -297,15 +273,15 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        if (auth()->user() != null && (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff')) {
+        if (Auth::check() && (Auth::user()->user_type == 'admin' || Auth::user()->user_type == 'staff')) {
             $redirect_route = 'login';
         } else {
             $redirect_route = 'home';
         }
 
         //User's Cart Delete
-        if (auth()->user()) {
-            Cart::where('user_id', auth()->user()->id)->delete();
+        if (Auth::check()) {
+            Cart::where('user_id', Auth::id())->delete();
         }
 
         $this->guard()->logout();
@@ -319,8 +295,8 @@ class LoginController extends Controller
     {
         $redirect_route = 'home';
 
-        if (auth()->user()) {
-            Cart::where('user_id', auth()->user()->id)->delete();
+        if (Auth::check()) {
+            Cart::where('user_id', Auth::id())->delete();
         }
 
         // if (auth()->user()->provider) {
@@ -331,10 +307,10 @@ class LoginController extends Controller
         //     }
         // }
 
-        $auth_user = auth()->user();
+        $auth_user = User::findOrFail(Auth::id());
         $auth_user->customer_products()->delete();
 
-        User::destroy(auth()->user()->id);
+        User::destroy(Auth::id());
 
         auth()->guard()->logout();
         $request->session()->invalidate();

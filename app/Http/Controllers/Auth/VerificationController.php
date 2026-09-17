@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\VerifiesEmails;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\OTPVerificationController;
 
 class VerificationController extends Controller
@@ -22,6 +23,7 @@ class VerificationController extends Controller
     |
     */
 
+    /** @noinspection PhpUndefinedClassInspection */
     use VerifiesEmails;
 
     /**
@@ -81,12 +83,12 @@ class VerificationController extends Controller
         return back()->with('resent', true);
     }
 
-    public function verification_confirmation($code){
+    public function verification_confirmation(string $code){
         $user = User::where('verification_code', $code)->first();
         if($user != null){
             $user->email_verified_at = Carbon::now();
             $user->save();
-            auth()->login($user, true);
+            Auth::login($user, true);
             flash(translate('Your email has been verified successfully'))->success();
         }
         else {

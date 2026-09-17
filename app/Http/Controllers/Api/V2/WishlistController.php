@@ -12,11 +12,11 @@ class WishlistController extends Controller
 
     public function index()
     {
-        $product_ids = Wishlist::where('user_id', auth()->user()->id)->pluck("product_id")->toArray();
+        $product_ids = Wishlist::where('user_id', api_user()->id)->pluck("product_id")->toArray();
         $existing_product_ids = Product::whereIn('id', $product_ids)->pluck("id")->toArray();
 
         $query = Wishlist::query();
-        $query->where('user_id', auth()->user()->id)->whereIn("product_id", $existing_product_ids);
+        $query->where('user_id', api_user()->id)->whereIn("product_id", $existing_product_ids);
 
         return new WishlistCollection($query->latest()->get());
     }
@@ -29,7 +29,7 @@ class WishlistController extends Controller
         return response()->json(['message' => translate('Product is successfully added to your wishlist')], 201);
     }
 
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         try {
             Wishlist::destroy($id);
@@ -42,24 +42,24 @@ class WishlistController extends Controller
 
     public function add(Request $request)
     {
-        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->count();
+        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->count();
         if ($product > 0) {
             return response()->json([
                 'message' => translate('Product present in wishlist'),
                 'is_in_wishlist' => true,
                 'product_id' => (integer)$request->product_id,
-                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->first()->id
+                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->first()->id
             ], 200);
         } else {
             Wishlist::create(
-                ['user_id' =>auth()->user()->id, 'product_id' => $request->product_id]
+                ['user_id' =>api_user()->id, 'product_id' => $request->product_id]
             );
 
             return response()->json([
                 'message' => translate('Product added to wishlist'),
                 'is_in_wishlist' => true,
                 'product_id' => (integer)$request->product_id,
-                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->first()->id
+                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->first()->id
             ], 200);
         }
 
@@ -67,7 +67,7 @@ class WishlistController extends Controller
 
     public function remove(Request $request)
     {
-        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' =>  auth()->user()->id])->count();
+        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' =>  api_user()->id])->count();
         if ($product == 0) {
             return response()->json([
                 'message' => translate('Product in not in wishlist'),
@@ -76,7 +76,7 @@ class WishlistController extends Controller
                 'wishlist_id' => 0
             ], 200);
         } else {
-            Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->delete();
+            Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->delete();
 
             return response()->json([
                 'message' => translate('Product is removed from wishlist'),
@@ -89,13 +89,13 @@ class WishlistController extends Controller
 
     public function isProductInWishlist(Request $request)
     {
-        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->count();
+        $product = Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->count();
         if ($product > 0)
             return response()->json([
                 'message' => translate('Product present in wishlist'),
                 'is_in_wishlist' => true,
                 'product_id' => (integer)$request->product_id,
-                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => auth()->user()->id])->first()->id
+                'wishlist_id' => (integer)Wishlist::where(['product_id' => $request->product_id, 'user_id' => api_user()->id])->first()->id
             ], 200);
 
         return response()->json([

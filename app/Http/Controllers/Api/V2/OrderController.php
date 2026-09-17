@@ -21,7 +21,7 @@ class OrderController extends Controller
 {
     public function store(Request $request, $set_paid = false)
     {
-        $cartItems = Cart::where('user_id', auth()->user()->id)->get();
+        $cartItems = Cart::where('user_id', api_user()->id)->get();
 
         if ($cartItems->isEmpty()) {
             return response()->json([
@@ -31,7 +31,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
 
 
         $address = Address::where('id', $cartItems->first()->address_id)->first();
@@ -202,7 +202,7 @@ class OrderController extends Controller
 
 
 
-        Cart::where('user_id', auth()->user()->id)->delete();
+        Cart::where('user_id', api_user()->id)->delete();
 
         if (
             $request->payment_type == 'cash_on_delivery'

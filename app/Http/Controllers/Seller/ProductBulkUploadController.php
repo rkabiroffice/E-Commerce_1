@@ -7,7 +7,7 @@ use App\Models\Category;
 use App\Models\Brand;
 
 use App\Models\ProductsImport;
-use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use niklasravnsborg\LaravelPdf\PdfWrapper;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,7 +28,7 @@ class ProductBulkUploadController extends Controller
     {
         $categories = Category::all();
 
-        return Pdf::loadView('backend.downloads.category', [
+        return (new PdfWrapper)->loadView('backend.downloads.category', [
             'categories' => $categories,
         ], [], [])->download('category.pdf');
     }
@@ -37,7 +37,7 @@ class ProductBulkUploadController extends Controller
     {
         $brands = Brand::all();
 
-        return Pdf::loadView('backend.downloads.brand', [
+        return (new PdfWrapper)->loadView('backend.downloads.brand', [
             'brands' => $brands,
         ], [], [])->download('brands.pdf');
     }

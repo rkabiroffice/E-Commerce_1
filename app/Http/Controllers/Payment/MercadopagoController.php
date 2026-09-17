@@ -10,8 +10,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class MercadopagoController extends Controller
 {
@@ -97,10 +97,10 @@ class MercadopagoController extends Controller
         else
             {
                 flash(translate('Payment is cancelled'))->error();
-                return redirect()->route('home');   
+                return redirect()->route('home');
             }
-        
-    
+
+
     }
 
     public function callback()

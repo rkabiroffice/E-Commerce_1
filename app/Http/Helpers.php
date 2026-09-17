@@ -38,6 +38,13 @@ use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ClubPointController;
 use App\Http\Controllers\CommissionController;
 
+if (!function_exists('api_user')) {
+    function api_user(): User
+    {
+        return User::findOrFail(Auth::id());
+    }
+}
+
 //sensSMS function for OTP
 if (!function_exists('sendSMS')) {
     function sendSMS(string|int $to, string|int $from, string $text, int|string|null $template_id)
@@ -930,7 +937,7 @@ if (!function_exists('seller_base_carrier_list')) {
     function seller_base_carrier_list(int|string $owner_id)
     {
         $carrier_list = array();
-        $carts = Cart::where('user_id', auth()->user()->id)->get();
+        $carts = Cart::where('user_id', api_user()->id)->get();
         if (count($carts) > 0) {
             $zone = $carts[0]['address'] ? Country::where('id', $carts[0]['address']['country_id'])->first()->zone_id : null;
             $carrier_query = Carrier::query();

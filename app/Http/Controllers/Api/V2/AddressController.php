@@ -17,13 +17,13 @@ class AddressController extends Controller
 {
     public function addresses()
     {
-        return new AddressCollection(Address::where('user_id', auth()->user()->id)->get());
+        return new AddressCollection(Address::where('user_id', api_user()->id)->get());
     }
 
     public function createShippingAddress(Request $request)
     {
         $address = new Address;
-        $address->user_id = auth()->user()->id;
+        $address->user_id = api_user()->id;
         $address->address = $request->address;
         $address->country_id = $request->country_id;
         $address->state_id = $request->state_id;
@@ -69,9 +69,9 @@ class AddressController extends Controller
     }
 
 
-    public function deleteShippingAddress($id)
+    public function deleteShippingAddress(int|string $id)
     {
-        $address = Address::where('id',$id)->where('user_id',auth()->user()->id)->first();
+        $address = Address::where('id',$id)->where('user_id',api_user()->id)->first();
         if($address == null) {
             return response()->json([
                 'result' => false,
@@ -87,7 +87,7 @@ class AddressController extends Controller
 
     public function makeShippingAddressDefault(Request $request)
     {
-        Address::where('user_id', auth()->user()->id)->update(['set_default' => 0]); //make all user addressed non default first
+        Address::where('user_id', api_user()->id)->update(['set_default' => 0]); //make all user addressed non default first
 
         $address = Address::find($request->id);
         $address->set_default = 1;
@@ -101,7 +101,7 @@ class AddressController extends Controller
     public function updateAddressInCart(Request $request)
     {
         try {
-            Cart::where('user_id', auth()->user()->id)->update(['address_id' => $request->address_id]);
+            Cart::where('user_id', api_user()->id)->update(['address_id' => $request->address_id]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -120,8 +120,8 @@ class AddressController extends Controller
 
     public function getShippingInCart(Request $request)
     {
-        
-           $cart= Cart::where('user_id', auth()->user()->id)->first();
+
+           $cart= Cart::where('user_id', api_user()->id)->first();
 
            $address = $cart->address;
            return new AddressCollection(Address::where('id', $address->id)->get());
@@ -132,13 +132,13 @@ class AddressController extends Controller
     public function updateShippingTypeInCart(Request $request)
     {
         try {
-           $carts= Cart::where('user_id', auth()->user()->id)->get();
+           $carts= Cart::where('user_id', api_user()->id)->get();
 
 
            foreach ($carts as $key => $cart) {
 
             $cart->shipping_cost = 0;
-            
+
            if($request->shipping_type=="pickup_point"){
             $cart->shipping_type="pickup_point";
             $cart->pickup_point=$request->shipping_id;
@@ -192,11 +192,11 @@ class AddressController extends Controller
              $country_query->where('name', 'like', '%' . $request->name . '%');
         }
         $countries = $country_query->get();
-        
+
         return new CountriesCollection($countries);
     }
 
-    public function getCitiesByState($state_id,Request $request)
+    public function getCitiesByState(int|string $state_id, Request $request)
     {
         $city_query = City::where('status', 1)->where('state_id',$state_id);
         if ($request->name != "" || $request->name != null) {
@@ -206,7 +206,7 @@ class AddressController extends Controller
         return new CitiesCollection($cities);
     }
 
-    public function getStatesByCountry($country_id,Request $request)
+    public function getStatesByCountry(int|string $country_id, Request $request)
     {
         $state_query = State::where('status', 1)->where('country_id',$country_id);
         if ($request->name != "" || $request->name != null) {

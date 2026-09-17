@@ -13,8 +13,8 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CheckoutController;
-use Session;
-use Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 
 class IyzicoController extends Controller
@@ -195,7 +195,7 @@ class IyzicoController extends Controller
 		//bugs
     }
 
-    public function callback(Request $request, $payment_type, $amount = null, $payment_method = null, $combined_order_id = null, $customer_package_id = null, $seller_package_id = null){
+    public function callback(Request $request, string $payment_type, int|float|null $amount = null, ?string $payment_method = null, int|string|null $combined_order_id = null, int|string|null $customer_package_id = null, int|string|null $seller_package_id = null){
         $options = new \Iyzipay\Options();
         $options->setApiKey(env('IYZICO_API_KEY'));
         $options->setSecretKey(env('IYZICO_SECRET_KEY'));

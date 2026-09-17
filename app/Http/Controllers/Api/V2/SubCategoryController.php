@@ -7,7 +7,7 @@ use App\Models\Category;
 
 class SubCategoryController extends Controller
 {
-    public function index($id)
+    public function index(int|string $id)
     {
         return new CategoryCollection(Category::where('parent_id', $id)->get());
     }

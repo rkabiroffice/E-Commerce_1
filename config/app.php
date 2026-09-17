@@ -169,15 +169,7 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
-        Laravel\Socialite\SocialiteServiceProvider::class,
-        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
-        Unicodeveloper\Paystack\PaystackServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-        Anand\LaravelPaytmWallet\PaytmWalletServiceProvider::class,
-        KingFlamez\Rave\RaveServiceProvider::class,
-        Intervention\Image\ImageServiceProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
-        SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         /*
          * Package Service Providers...
          */
@@ -190,8 +182,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
-        Spatie\Permission\PermissionServiceProvider::class,
 
     ],
 
@@ -241,15 +231,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-        'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
-        'Paystack' => Unicodeveloper\Paystack\Facades\Paystack::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-        'PaytmWallet' => Anand\LaravelPaytmWallet\Facades\PaytmWallet::class,
-        'Str' => Illuminate\Support\Str::class,
-        'Rave' => KingFlamez\Rave\Facades\Rave::class,
-        'Image' => Intervention\Image\Facades\Image::class,
-        'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class
+        'Str' => Illuminate\Support\Str::class
     ],
 
 ];

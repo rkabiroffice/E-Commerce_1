@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\TicketReply;
 use App\Models\User;
-use Auth;
-use Mail;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class SupportTicketController extends Controller
 {
@@ -48,7 +48,7 @@ class SupportTicketController extends Controller
         }
     }
 
-    public function send_support_mail_to_admin($ticket){
+    public function send_support_mail_to_admin(Ticket $ticket){
         $array['view'] = 'emails.support';
         $array['subject'] = 'Support ticket Code is:- '.$ticket->code;
         $array['from'] = env('MAIL_FROM_ADDRESS');
@@ -70,7 +70,7 @@ class SupportTicketController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $ticket = Ticket::findOrFail(decrypt($id));
         $ticket->client_viewed = 1;

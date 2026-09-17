@@ -8,11 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Cart;
 use App\Notifications\EmailVerificationNotification;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable, HasApiTokens, HasRoles;
+    use Notifiable, HasApiTokens, \Spatie\Permission\Traits\HasRoles;
 
     public function sendEmailVerificationNotification()
     {

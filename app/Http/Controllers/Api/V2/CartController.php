@@ -13,8 +13,8 @@ class CartController extends Controller
 {
     public function summary()
     {
-        //$user = User::where('id', auth()->user()->id)->first();
-        $items = auth()->user()->carts;
+        //$user = User::where('id', api_user()->id)->first();
+        $items = api_user()->carts;
         if ($items->isEmpty()) {
             return response()->json([
                 'sub_total' => format_price(0.00),
@@ -60,7 +60,7 @@ class CartController extends Controller
 
     public function count()
     {
-        $items = auth()->user()->carts;
+        $items = api_user()->carts;
 
         return response()->json([
             'count' => sizeof($items),
@@ -72,13 +72,13 @@ class CartController extends Controller
 
     public function getList()
     {
-        $owner_ids = Cart::where('user_id', auth()->user()->id)->select('owner_id')->groupBy('owner_id')->pluck('owner_id')->toArray();
+        $owner_ids = Cart::where('user_id', api_user()->id)->select('owner_id')->groupBy('owner_id')->pluck('owner_id')->toArray();
         $currency_symbol = currency_symbol();
         $shops = [];
         if (!empty($owner_ids)) {
             foreach ($owner_ids as $owner_id) {
                 $shop = array();
-                $shop_items_raw_data = Cart::where('user_id', auth()->user()->id)->where('owner_id', $owner_id)->get()->toArray();
+                $shop_items_raw_data = Cart::where('user_id', api_user()->id)->where('owner_id', $owner_id)->get()->toArray();
                 $shop_items_data = array();
                 if (!empty($shop_items_raw_data)) {
                     foreach ($shop_items_raw_data as $shop_items_raw_data_item) {
@@ -189,13 +189,13 @@ class CartController extends Controller
             }
         }
 
-        $cart_item = Cart::where('product_id', $request->id)->where("user_id",auth()->id())->first();
+        $cart_item = Cart::where('product_id', $request->id)->where("user_id",api_user()->id)->first();
         if($cart_item && $cart_item->product->digital == 1) {
             return response()->json(['result' => false, 'message' => 'Already added this product' ]);
         }
 
         Cart::updateOrCreate([
-            'user_id' => auth()->user()->id,
+            'user_id' => api_user()->id,
             'owner_id' => $product->user_id,
             'product_id' => $request->id,
             'variation' => $variant

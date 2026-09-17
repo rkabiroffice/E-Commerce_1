@@ -11,15 +11,20 @@ use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use SebaCarrasco93\LaravelPayku\Facades\LaravelPayku;
-use SebaCarrasco93\LaravelPayku\Models\PaykuTransaction;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class PaykuController
 {
+    private function payku()
+    {
+        $paykuClass = 'SebaCarrasco93\\LaravelPayku\\LaravelPayku';
+        return new $paykuClass;
+    }
+
     public function pay(Request $request)
-    {   
+    {
+        $data = [];
         if($request->session()->has('payment_type')){
             if($request->session()->get('payment_type') == 'cart_payment'){
                 $combined_order = CombinedOrder::findOrFail(Session::get('combined_order_id'));
@@ -58,23 +63,23 @@ class PaykuController
             }
         }
 
-        return LaravelPayku::create($data['order'], $data['subject'], $data['amount'], $data['email']);
+        return $this->payku()->create($data['order'], $data['subject'], $data['amount'], $data['email']);
     }
 
-    public function return($order)
+    public function return(string $order)
     {
-        $detail = LaravelPayku::return($order);
+        $detail = $this->payku()->return($order);
 
         return $detail;
     }
 
-    public function notify($order)
+    public function notify(string $order)
     {
-        $result = LaravelPayku::notify($order);
+        $result = $this->payku()->notify($order);
         $routeName = config('laravel-payku.route_finish_name');
 
         $routeExists = Route::has($routeName);
-        
+
         if ($routeExists) {
             return redirect()->route($routeName, $result);
         }
@@ -82,9 +87,10 @@ class PaykuController
         return view('payku::notify.missing-route', compact('result', 'routeName'));
     }
 
-    public function callback($id){
-        $paykuTransaction = PaykuTransaction::find($id);
-        
+    public function callback(int|string $id){
+        $transactionClass = 'SebaCarrasco93\\LaravelPayku\\Models\\PaykuTransaction';
+        $paykuTransaction = $transactionClass::find($id);
+
         if($paykuTransaction->status == 'success'){
             $payment_type = Session::get('payment_type');
 

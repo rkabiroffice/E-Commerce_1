@@ -13,10 +13,10 @@ class CouponController extends Controller
     {
         $coupon = Coupon::where('code', $request->code)->first();
 
-        if ($coupon != null && strtotime(date('d-m-Y')) >= $coupon->start_date && strtotime(date('d-m-Y')) <= $coupon->end_date && CouponUsage::where('user_id', auth()->user()->id)->where('coupon_id', $coupon->id)->first() == null) {
+        if ($coupon != null && strtotime(date('d-m-Y')) >= $coupon->start_date && strtotime(date('d-m-Y')) <= $coupon->end_date && CouponUsage::where('user_id', api_user()->id)->where('coupon_id', $coupon->id)->first() == null) {
             $couponDetails = json_decode($coupon->details);
             if ($coupon->type == 'cart_base') {
-                $sum = Cart::where('user_id', auth()->user()->id)->sum('price');
+                $sum = Cart::where('user_id', api_user()->id)->sum('price');
                 if ($sum > $couponDetails->min_buy) {
                     if ($coupon->discount_type == 'percent') {
                         $couponDiscount =  ($sum * $coupon->discount) / 100;
@@ -26,7 +26,7 @@ class CouponController extends Controller
                     } elseif ($coupon->discount_type == 'amount') {
                         $couponDiscount = $coupon->discount;
                     }
-                    if ($this->isCouponAlreadyApplied(auth()->user()->id, $coupon->id)) {
+                    if ($this->isCouponAlreadyApplied(api_user()->id, $coupon->id)) {
                         return response()->json([
                             'success' => false,
                             'message' => translate('The coupon is already applied. Please try another coupon')
@@ -40,9 +40,9 @@ class CouponController extends Controller
                 }
             } elseif ($coupon->type == 'product_base') {
                 $couponDiscount = 0;
-                $cartItems = Cart::where('user_id',auth()->user()->id)->get();
+                $cartItems = Cart::where('user_id',api_user()->id)->get();
                 foreach ($cartItems as $key => $cartItem) {
-                    foreach ($couponDetails as $key => $couponDetail) {
+                    foreach ($couponDetails as $couponKey => $couponDetail) {
                         if ($couponDetail->product_id == $cartItem->product_id) {
                             if ($coupon->discount_type == 'percent') {
                                 $couponDiscount += $cartItem->price * $coupon->discount / 100;
@@ -52,7 +52,7 @@ class CouponController extends Controller
                         }
                     }
                 }
-                if ($this->isCouponAlreadyApplied(auth()->user()->id, $coupon->id)) {
+                if ($this->isCouponAlreadyApplied(api_user()->id, $coupon->id)) {
                     return response()->json([
                         'success' => false,
                         'message' => translate('The coupon is already applied. Please try another coupon')
@@ -73,7 +73,7 @@ class CouponController extends Controller
         }
     }
 
-    protected function isCouponAlreadyApplied($userId, $couponId) {
+    protected function isCouponAlreadyApplied(int|string $userId, int|string $couponId) {
         return CouponUsage::where(['user_id' => $userId, 'coupon_id' => $couponId])->count() > 0;
     }
 }

@@ -6,7 +6,7 @@ use App\Models\Currency;
 use App\Models\Language;
 use App\Models\Order;
 use Illuminate\Support\Facades\Session;
-use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use niklasravnsborg\LaravelPdf\PdfWrapper;
 
 class InvoiceController extends Controller
 {
@@ -62,7 +62,7 @@ class InvoiceController extends Controller
         $config = [];
 
         $order = Order::findOrFail($id);
-        return Pdf::loadView('backend.invoices.invoice',[
+        return (new PdfWrapper)->loadView('backend.invoices.invoice',[
             'order' => $order,
             'font_family' => $font_family,
             'direction' => $direction,

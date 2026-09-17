@@ -7,14 +7,14 @@ use App\Models\Upload;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
 
 class AizUploadController extends Controller
 {
     public function index(Request $request)
     {
 
-        $all_uploads = (auth()->user()->user_type == 'seller') ? Upload::where('user_id', auth()->user()->id) : Upload::query();
+        $all_uploads = (Auth::user()->user_type == 'seller') ? Upload::where('user_id', Auth::user()->id) : Upload::query();
         $search = null;
         $sort_by = null;
 
@@ -45,14 +45,14 @@ class AizUploadController extends Controller
         $all_uploads = $all_uploads->paginate(60)->appends(request()->query());
 
 
-        return (auth()->user()->user_type == 'seller')
+        return (Auth::user()->user_type == 'seller')
             ? view('seller.uploads.index', compact('all_uploads', 'search', 'sort_by'))
             : view('backend.uploaded_files.index', compact('all_uploads', 'search', 'sort_by'));
     }
 
     public function create()
     {
-        return (auth()->user()->user_type == 'seller')
+        return (Auth::user()->user_type == 'seller')
             ? view('seller.uploads.create')
             : view('backend.uploaded_files.create');
     }
@@ -135,7 +135,9 @@ class AizUploadController extends Controller
 
                 if ($type[$extension] == 'image' && get_setting('disable_image_optimization') != 1) {
                     try {
-                        $img = Image::make($request->file('aiz_file')->getRealPath())->encode();
+                        $img = (new ImageManager(['driver' => config('image.driver', 'gd')]))
+                            ->make($request->file('aiz_file')->getRealPath())
+                            ->encode();
                         $height = $img->height();
                         $width = $img->width();
                         if ($width > $height && $width > 1500) {
@@ -212,7 +214,7 @@ class AizUploadController extends Controller
     {
         $upload = Upload::findOrFail($id);
 
-        if (auth()->user()->user_type == 'seller' && $upload->user_id != auth()->user()->id) {
+        if (Auth::user()->user_type == 'seller' && $upload->user_id != Auth::user()->id) {
             flash(translate("You don't have permission for deleting this!"))->error();
             return back();
         }
@@ -306,7 +308,7 @@ class AizUploadController extends Controller
     {
         $file = Upload::findOrFail($request['id']);
 
-        return (auth()->user()->user_type == 'seller')
+        return (Auth::user()->user_type == 'seller')
             ? view('seller.uploads.info', compact('file'))
             : view('backend.uploaded_files.info', compact('file'));
     }

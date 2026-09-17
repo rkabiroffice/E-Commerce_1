@@ -44,21 +44,22 @@ class OrderController extends Controller
 
         $orders = Order::orderBy('id', 'desc');
         $admin_user_id = User::where('user_type', 'admin')->first()->id;
+        $current_user = User::findOrFail(Auth::id());
 
 
         if (
             Route::currentRouteName() == 'inhouse_orders.index' &&
-            Auth::user()->can('view_inhouse_orders')
+            $current_user->hasPermissionTo('view_inhouse_orders')
         ) {
             $orders = $orders->where('orders.seller_id', '=', $admin_user_id);
         } else if (
             Route::currentRouteName() == 'seller_orders.index' &&
-            Auth::user()->can('view_seller_orders')
+            $current_user->hasPermissionTo('view_seller_orders')
         ) {
             $orders = $orders->where('orders.seller_id', '!=', $admin_user_id);
         } else if (
             Route::currentRouteName() == 'pick_up_point.index' &&
-            Auth::user()->can('view_pickup_point_orders')
+            $current_user->hasPermissionTo('view_pickup_point_orders')
         ) {
             $orders->where('shipping_type', 'pickup_point')->orderBy('code', 'desc');
             if (
@@ -70,7 +71,7 @@ class OrderController extends Controller
             }
         } else if (
             Route::currentRouteName() == 'all_orders.index' &&
-            Auth::user()->can('view_all_orders')
+            $current_user->hasPermissionTo('view_all_orders')
         ) {
         } else {
             abort(403);
@@ -96,7 +97,7 @@ class OrderController extends Controller
         return view('backend.sales.index', compact('orders', 'sort_search', 'payment_status', 'delivery_status', 'date'));
     }
 
-    public function show($id)
+    public function show(int|string $id)
     {
         $order = Order::findOrFail(decrypt($id));
         $order_shipping_address = json_decode($order->shipping_address);

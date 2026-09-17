@@ -7,7 +7,7 @@ use App\Models\Conversation;
 use App\Models\BusinessSetting;
 use App\Models\Message;
 use App\Models\ProductQuery;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
@@ -30,10 +30,10 @@ class ConversationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+    * @param  int|string  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $conversation = Conversation::findOrFail(decrypt($id));
         if ($conversation->sender_id == Auth::user()->id) {
@@ -48,7 +48,7 @@ class ConversationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+    * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function refresh(Request $request)
@@ -87,5 +87,5 @@ class ConversationController extends Controller
 
         return back();
     }
-    
+
 }

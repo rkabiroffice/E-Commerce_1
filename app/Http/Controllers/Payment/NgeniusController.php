@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CustomerPackage;
 use App\Models\CombinedOrder;
 use App\Utility\NgeniusUtility;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 class NgeniusController extends Controller
 {

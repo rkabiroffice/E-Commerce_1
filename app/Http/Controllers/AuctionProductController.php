@@ -9,9 +9,9 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\AuctionService;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class AuctionProductController extends Controller
 {
@@ -67,7 +67,7 @@ class AuctionProductController extends Controller
         $seller_id = null;
         $type = 'seller';
         $products = Product::where('added_by','seller')->orderBy('created_at', 'desc')->where('auction_product',1);
-        
+
         if ($request->has('user_id') && $request->user_id != null) {
             $products = $products->where('user_id', $request->user_id);
             $seller_id = $request->user_id;
@@ -85,7 +85,7 @@ class AuctionProductController extends Controller
     }
     // Auction products list admin panel end
 
-    // Auction Products list in Seller panel 
+    // Auction Products list in Seller panel
     public function auction_product_list_seller(Request $request)
     {
         if(get_setting('seller_auction_product') == 0){
@@ -103,8 +103,8 @@ class AuctionProductController extends Controller
         $products = $products->paginate(15);
 
         return view('auction.frontend.seller.auction_product_list', compact('products', 'sort_search'));
-        
-        
+
+
     }
 
 
@@ -120,7 +120,7 @@ class AuctionProductController extends Controller
             ->with('childrenCategories')
             ->get();
 
-        return view('auction.auction_products.create', compact('categories')); 
+        return view('auction.auction_products.create', compact('categories'));
     }
 
     public function product_create_seller()
@@ -132,7 +132,7 @@ class AuctionProductController extends Controller
 
         if(get_setting('seller_auction_product') == 1){
             if(addon_is_activated('seller_subscription')){
-                if(Auth::user()->seller->seller_package != null && Auth::user()->seller->seller_package->product_upload_limit > Auth::user()->products()->count()){
+                if(Auth::user()->seller->seller_package != null && Auth::user()->seller->seller_package->product_upload_limit > User::findOrFail(Auth::id())->products()->count()){
                     return view('auction.frontend.seller.auction_product_upload', compact('categories'));
                 }
                 else {
@@ -143,8 +143,8 @@ class AuctionProductController extends Controller
             else{
                 return view('auction.frontend.seller.auction_product_upload', compact('categories'));
             }
-        }  
-    } 
+        }
+    }
 
     public function product_store_admin(Request $request){
         (new AuctionService)->store($request);
@@ -153,11 +153,11 @@ class AuctionProductController extends Controller
 
     public function product_store_seller(Request $request){
         if(addon_is_activated('seller_subscription')){
-            if(Auth::user()->seller->seller_package == null || Auth::user()->seller->seller_package->product_upload_limit <= Auth::user()->products()->count()){
+            if(Auth::user()->seller->seller_package == null || Auth::user()->seller->seller_package->product_upload_limit <= User::findOrFail(Auth::id())->products()->count()){
                 flash(translate('Upload limit has been reached. Please upgrade your package.'))->warning();
                 return back();
             }
-        }  
+        }
 
         (new AuctionService)->store($request);
         return redirect()->route('auction_products.seller.index');
@@ -166,16 +166,16 @@ class AuctionProductController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+    * @param  int|string  $id
      * @return \Illuminate\Http\Response
      */
-    public function product_destroy_admin($id)
+    public function product_destroy_admin(int|string $id)
     {
         (new AuctionService)->destroy($id);
         return redirect()->route('auction.inhouse_products');
     }
 
-    public function product_destroy_seller($id)
+    public function product_destroy_seller(int|string $id)
     {
         (new AuctionService)->destroy($id);
         return redirect()->route('auction_products.seller.index');
@@ -187,7 +187,7 @@ class AuctionProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function product_edit_admin(Request $request, $id)
+    public function product_edit_admin(Request $request, int|string $id)
     {
         $product = Product::findOrFail($id);
         $lang = $request->lang;
@@ -199,7 +199,7 @@ class AuctionProductController extends Controller
         return view('auction.auction_products.edit', compact('product', 'categories', 'tags','lang'));
     }
 
-    public function product_edit_seller(Request $request, $id)
+    public function product_edit_seller(Request $request, int|string $id)
     {
         $product = Product::findOrFail($id);
         $lang = $request->lang;
@@ -208,7 +208,7 @@ class AuctionProductController extends Controller
             ->where('digital', 0)
             ->with('childrenCategories')
             ->get();
-        
+
         return view('auction.frontend.seller.auction_product_edit', compact('product', 'categories', 'tags','lang'));
     }
 
@@ -220,13 +220,13 @@ class AuctionProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function product_update_admin(Request $request, $id)
+    public function product_update_admin(Request $request, int|string $id)
     {
         (new AuctionService)->update($request, $id);
         return back();
     }
 
-    public function product_update_seller(Request $request, $id)
+    public function product_update_seller(Request $request, int|string $id)
     {
         (new AuctionService)->update($request, $id);
         return back();
@@ -238,7 +238,7 @@ class AuctionProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         (new AuctionService)->destroy($id);
         return back();
@@ -277,7 +277,7 @@ class AuctionProductController extends Controller
         return view('auction.frontend.all_auction_products', compact('products'));
     }
 
-    public function auction_product_details(Request $request, $slug)
+    public function auction_product_details(Request $request, string $slug)
     {
         $detailedProduct  = Product::where('slug', $slug)->first();
         if($detailedProduct != null){
@@ -331,7 +331,7 @@ class AuctionProductController extends Controller
         return view('auction.auction_product_orders', compact('orders', 'payment_status', 'delivery_status', 'sort_search','date'));
     }
 
-    public function auction_orders_show($id)
+    public function auction_orders_show(int|string $id)
     {
         $order = Order::findOrFail(decrypt($id));
         $order_shipping_address = json_decode($order->shipping_address);
@@ -361,7 +361,7 @@ class AuctionProductController extends Controller
                     ->join('products', 'order_details.product_id', '=', 'products.id')
                     ->where('products.auction_product', '1')
                     ->select('orders.id');
-                    
+
 
         if ($request->payment_status != null) {
             $orders = $orders->where('payment_status', $request->payment_status);
@@ -375,7 +375,7 @@ class AuctionProductController extends Controller
             $sort_search = $request->search;
             $orders = $orders->where('code', 'like', '%' . $sort_search . '%');
         }
-       
+
         $orders = $orders->paginate(15);
         return view('auction.frontend.seller.auction_product_orders', compact('orders', 'payment_status', 'delivery_status', 'sort_search'));
     }

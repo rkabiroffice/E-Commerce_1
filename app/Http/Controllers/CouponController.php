@@ -45,7 +45,7 @@ class CouponController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(CouponRequest $request)
-    {   
+    {
         $user_id = User::where('user_type', 'admin')->first()->id;
         Coupon::create($request->validated() + [
             'user_id' => $user_id,
@@ -80,8 +80,8 @@ class CouponController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+    * @param  \App\Http\Requests\CouponRequest  $request
+    * @param  \App\Models\Coupon  $coupon
      * @return \Illuminate\Http\Response
      */
     public function update(CouponRequest $request, Coupon $coupon)

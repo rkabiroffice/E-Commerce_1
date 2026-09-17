@@ -13,7 +13,7 @@ class RefundController extends Controller
     //
 
     public function index(){
-        $sellerId = auth()->user()->id;
+        $sellerId = api_user()->id;
 
         $refunds = RefundRequest::where('seller_id',$sellerId)->latest()->paginate(10);
         return new RefundRequestCollection($refunds);
@@ -24,11 +24,11 @@ class RefundController extends Controller
     {
         $refund = RefundRequest::findOrFail($request->refund_id);
 
-        if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
+        if (api_user()->user_type == 'admin' || api_user()->user_type == 'staff') {
             $refund->seller_approval = 1;
             $refund->admin_approval = 1;
         }
-        elseif (auth()->user()->user_type == 'seller' && $refund->seller_id==auth()->user()->id){
+        elseif (api_user()->user_type == 'seller' && $refund->seller_id==api_user()->id){
             $refund->seller_approval = 1;
         }
 
@@ -44,11 +44,11 @@ class RefundController extends Controller
     public function reject_refund_request(Request $request){
       $refund = RefundRequest::findOrFail($request->refund_id);
        $refund->reject_reason  = $request->reject_reason;
-      if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
+      if (api_user()->user_type == 'admin' || api_user()->user_type == 'staff') {
           $refund->admin_approval = 2;
           $refund->refund_status  = 2;
       }
-      elseif (auth()->user()->user_type == 'seller' && $refund->seller_id==auth()->user()->id){
+      elseif (api_user()->user_type == 'seller' && $refund->seller_id==api_user()->id){
           $refund->seller_approval = 2;
       }
       

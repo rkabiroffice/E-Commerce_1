@@ -23,19 +23,19 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->where('user_id', auth()->user()->id)->paginate(10);
+        $products = Product::with('category')->where('user_id', api_user()->id)->paginate(10);
         return new ProductCollection($products);
     }
 
     public function edit()
     {
-        $product = Product::where('user_id', auth()->user()->id)->first();
+        $product = Product::where('user_id', api_user()->id)->first();
         return new ProductResource($product);
     }
 
     public function change_status(Request $request)
     {
-        $product = Product::where('user_id', auth()->user()->id)
+        $product = Product::where('user_id', api_user()->id)
             ->where('id', $request->id)
             ->update([
                 'published' => $request->status
@@ -51,7 +51,7 @@ class ProductController extends Controller
 
     public function change_featured_status(Request $request)
     {
-        $product = Product::where('user_id', auth()->user()->id)
+        $product = Product::where('user_id', api_user()->id)
             ->where('id', $request->id)
             ->update([
                 'seller_featured' => $request->featured_status
@@ -66,20 +66,20 @@ class ProductController extends Controller
             $this->success(translate('Product has been unfeatured successfully'));
     }
 
-    public function duplicate($id)
+    public function duplicate(int|string $id)
     {
         $product = Product::findOrFail($id);
-        
-        if (auth()->user()->id != $product->user_id) {
+
+        if (api_user()->id != $product->user_id) {
             return $this->failed(translate('This product is not yours'));
         }
         if (addon_is_activated('seller_subscription')) {
-            if (!seller_package_validity_check(auth()->user()->id)) {
+            if (!seller_package_validity_check(api_user()->id)) {
                 return $this->failed(translate('Please upgrade your package'));
             }
         }
 
-        if (auth()->user()->id == $product->user_id) {
+        if (api_user()->id == $product->user_id) {
             $product_new = $product->replicate();
             $product_new->slug = $product_new->slug . '-' . Str::random(5);
             $product_new->save();
@@ -94,11 +94,11 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         $product = Product::findOrFail($id);
 
-        if (auth()->user()->id != $product->user_id) {
+        if (api_user()->id != $product->user_id) {
             return $this->failed(translate('This product is not yours'));
         }
 
@@ -121,17 +121,17 @@ class ProductController extends Controller
         $reviews = Review::orderBy('id', 'desc')
             ->join('products', 'reviews.product_id', '=', 'products.id')
             ->join('users','reviews.user_id','=','users.id')
-            ->where('products.user_id', auth()->user()->id)
+            ->where('products.user_id', api_user()->id)
             ->select('reviews.id','reviews.rating','reviews.comment','reviews.status','reviews.updated_at','products.name as product_name','users.id as user_id','users.name','users.avatar')
             ->distinct()
             ->paginate(1);
-        
+
        return new ProductReviewCollection($reviews);
     }
 
     public function remainingUploads(){
-        
-        $remaining_uploads=(max(0, auth()->user()->shop->product_upload_limit - auth()->user()->products()->count()) );
+
+        $remaining_uploads=(max(0, api_user()->shop->product_upload_limit - api_user()->products()->count()) );
         return response()->json([
             'ramaining_product'=> $remaining_uploads,
         ]);

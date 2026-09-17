@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function info($id)
     {
-        return new UserCollection(User::where('id', auth()->user()->id)->get());
+        return new UserCollection(User::where('id', api_user()->id)->get());
     }
 
     public function updateName(Request $request)

@@ -15,8 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Cookie;
-use Session;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Session;
 use Nexmo;
 use Twilio\Rest\Client;
 
@@ -33,6 +33,7 @@ class RegisterController extends Controller
     |
     */
 
+    /** @noinspection PhpUndefinedClassInspection */
     use RegistersUsers;
 
     /**
@@ -94,7 +95,7 @@ class RegisterController extends Controller
                 $otpController->send_code($user);
             }
         }
-        
+
         if(session('temp_user_id') != null){
             Cart::where('temp_user_id', session('temp_user_id'))
                     ->update([
@@ -157,7 +158,7 @@ class RegisterController extends Controller
             ?: redirect($this->redirectPath());
     }
 
-    protected function registered(Request $request, $user)
+    protected function registered(Request $request, User $user)
     {
         if ($user->email == null) {
             return redirect()->route('verification');

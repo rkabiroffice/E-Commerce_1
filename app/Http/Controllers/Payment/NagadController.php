@@ -10,14 +10,14 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CheckoutController;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 class NagadController{
 
-    private $amount = null;
-    private $tnx = null;
+    private int|float|null $amount = null;
+    private int|string|null $tnx = null;
 
-    private $nagadHost;
+    private string $nagadHost;
     private $tnx_status = false;
 
     private $merchantAdditionalInfo = [];
@@ -33,14 +33,14 @@ class NagadController{
 
     }
 
-    public function tnx($id,$status=false)
+    public function tnx(int|string $id, bool $status=false)
     {
         $this->tnx = $id;
         $this->tnx_status = $status;
         return $this;
     }
 
-    public function amount($amount)
+    public function amount(int|float $amount)
     {
         $this->amount = $amount;
         return $this;

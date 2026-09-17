@@ -18,7 +18,7 @@ class ReviewController extends Controller
     public function submit(Request $request)
     {
         $product = Product::find($request->product_id);
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
 
         /*
          @foreach ($detailedProduct->orderDetails as $key => $orderDetail)
@@ -33,7 +33,7 @@ class ReviewController extends Controller
         $reviewable = false;
 
         foreach ($product->orderDetails as $key => $orderDetail) {
-            if($orderDetail->order != null && $orderDetail->order->user_id == auth()->user()->id && $orderDetail->delivery_status == 'delivered' && \App\Models\Review::where('user_id', auth()->user()->id)->where('product_id', $product->id)->first() == null){
+            if($orderDetail->order != null && $orderDetail->order->user_id == api_user()->id && $orderDetail->delivery_status == 'delivered' && \App\Models\Review::where('user_id', api_user()->id)->where('product_id', $product->id)->first() == null){
                 $reviewable = true;
             }
         }
@@ -47,7 +47,7 @@ class ReviewController extends Controller
 
         $review = new \App\Models\Review;
         $review->product_id = $request->product_id;
-        $review->user_id = auth()->user()->id;
+        $review->user_id = api_user()->id;
         $review->rating = $request->rating;
         $review->comment = $request->comment;
         $review->viewed = 0;

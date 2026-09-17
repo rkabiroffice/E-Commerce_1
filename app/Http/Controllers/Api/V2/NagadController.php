@@ -14,10 +14,10 @@ use Illuminate\Http\Request;
 class NagadController
 {
 
-    private $amount = null;
-    private $tnx = null;
+    private int|float|null $amount = null;
+    private int|string|null $tnx = null;
 
-    private $nagadHost;
+    private string $nagadHost;
     private $tnx_status = false;
 
     private $merchantAdditionalInfo = [];
@@ -55,7 +55,7 @@ class NagadController
     }
 
 
-    public function getSession($payment_type)
+    public function getSession(string $payment_type)
     {
 
         $DateTime = Date('YmdHis');

@@ -393,8 +393,8 @@ class DeliveryBoyController extends Controller
 
     public function details(int $id)
     {
-        $order_detail = Order::where('id', $id)->where('assign_delivery_boy', auth()->user()->id)->get();
-        // $order_query = auth()->user()->orders->where('id', $id);
+        $order_detail = Order::where('id', $id)->where('assign_delivery_boy', api_user()->id)->get();
+        // $order_query = api_user()->orders->where('id', $id);
 
         // return new PurchaseHistoryCollection($order_query->get());
         return new PurchaseHistoryCollection($order_detail);
@@ -402,7 +402,7 @@ class DeliveryBoyController extends Controller
 
     public function items(int $id)
     {
-        $order_id = Order::select('id')->where('id', $id)->where('assign_delivery_boy', auth()->user()->id)->first();
+        $order_id = Order::select('id')->where('id', $id)->where('assign_delivery_boy', api_user()->id)->first();
         $order_query = OrderDetail::where('order_id', $order_id->id);
         return new PurchaseHistoryItemsCollection($order_query->get());
     }

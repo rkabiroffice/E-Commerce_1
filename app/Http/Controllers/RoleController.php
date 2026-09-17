@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// use App\Models\Role;
+use App\Models\Role;
+use App\Models\Permission;
 use App\Models\RoleTranslation;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
@@ -25,7 +24,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::where('id','!=',1)->paginate(10);
+        $roles = (new Role)->newQuery()->where('id','!=',1)->paginate(10);
         return view('backend.staff.staff_roles.index', compact('roles'));
 
         // $roles = Role::paginate(10);
@@ -51,7 +50,8 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         // dd($request->permissions);
-        $role = Role::create(['name' => $request->name]);
+        $role = new Role(['name' => $request->name]);
+        $role->save();
         $role->givePermissionTo($request->permissions);
 
         $role_translation = RoleTranslation::firstOrNew(['lang' => env('DEFAULT_LANGUAGE'), 'role_id' => $role->id]);
@@ -68,7 +68,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         //
     }
@@ -82,7 +82,7 @@ class RoleController extends Controller
     public function edit(Request $request, int|string $id)
     {
         $lang = $request->lang;
-        $role = Role::findOrFail($id);
+        $role = (new Role)->newQuery()->findOrFail($id);
         return view('backend.staff.staff_roles.edit', compact('role','lang'));
     }
 
@@ -93,9 +93,9 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
-        $role = Role::findOrFail($id);
+        $role = (new Role)->newQuery()->findOrFail($id);
         if($request->lang == env("DEFAULT_LANGUAGE")){
             $role->name = $request->name;
         }
@@ -118,17 +118,18 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         RoleTranslation::where('role_id',$id)->delete();
-        Role::destroy($id);
+        (new Role)->newQuery()->whereKey($id)->delete();
         flash(translate('Role has been deleted successfully'))->success();
         return redirect()->route('roles.index');
     }
 
     public function add_permission(Request $request)
     {
-        $permission = Permission::create(['name' => $request->name, 'section'=> $request->parent]);
+        $permission = new Permission(['name' => $request->name, 'section' => $request->parent]);
+        $permission->save();
         return redirect()->route('roles.index');
     }
 

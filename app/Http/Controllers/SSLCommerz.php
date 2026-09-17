@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\BusinessSetting;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 # IF BROWSE FROM LOCAL HOST, KEEP true
 if(!defined("SSLCZ_IS_LOCAL_HOST")){
@@ -11,13 +11,13 @@ if(!defined("SSLCZ_IS_LOCAL_HOST")){
 
 class SSLCommerz
 {
-    protected $sslc_submit_url;
-    protected $sslc_validation_url;
-    protected $sslc_mode;
-    protected $sslc_data;
-    protected $store_id;
-    protected $store_pass;
-    public $error = '';
+    protected string $sslc_submit_url;
+    protected string $sslc_validation_url;
+    protected string $sslc_mode;
+    protected array $sslc_data = [];
+    protected string $store_id = '';
+    protected string $store_pass = '';
+    public string $error = '';
 
     public function __construct()
     {
@@ -38,7 +38,7 @@ class SSLCommerz
         $this->sslc_validation_url = "https://" . $this->sslc_mode . ".sslcommerz.com/validator/api/validationserverAPI.php";
     }
 
-    public function initiate($post_data, $get_pay_options = false)
+    public function initiate(array|string $post_data, bool $get_pay_options = false)
     {
         if ($post_data != '' && is_array($post_data)) {
             $post_data['store_id'] = $this->store_id;
@@ -234,7 +234,7 @@ class SSLCommerz
 
     }
 
-    public function orderValidate($trx_id = '', $amount = 0, $currency = "BDT", $post_data)
+    public function orderValidate(string $trx_id = '', int|float $amount = 0, string $currency = "BDT", array $post_data = [])
     {
         if ($post_data == '' && $trx_id == '' && !is_array($post_data)) {
             $this->error = "Please provide valid transaction ID and post request data";
@@ -249,7 +249,7 @@ class SSLCommerz
     }
 
     # SEND CURL REQUEST
-    protected function sendRequest($data)
+    protected function sendRequest(array $data)
     {
 
 
@@ -289,7 +289,7 @@ class SSLCommerz
     }
 
     # SET SSLCOMMERZ PAYMENT MODE - LIVE OR TEST
-    protected function setSSLCommerzMode($test)
+    protected function setSSLCommerzMode(bool|int $test)
     {
         if ($test) {
             $this->sslc_mode = "sandbox";
@@ -299,7 +299,7 @@ class SSLCommerz
     }
 
     # VALIDATE SSLCOMMERZ TRANSACTION
-    protected function validate($merchant_trans_id, $merchant_trans_amount, $merchant_trans_currency, $post_data)
+    protected function validate(string $merchant_trans_id, int|float $merchant_trans_amount, string $merchant_trans_currency, array $post_data)
     {
         # MERCHANT SYSTEM INFO
         if ($merchant_trans_id != "" && $merchant_trans_amount != 0) {
@@ -412,7 +412,7 @@ class SSLCommerz
     }
 
     # FUNCTION TO CHECK HASH VALUE
-    protected function SSLCOMMERZ_hash_varify($store_passwd = "", $post_data)
+    protected function SSLCOMMERZ_hash_varify(string $store_passwd = "", array $post_data = [])
     {
 
         if (isset($post_data) && isset($post_data['verify_sign']) && isset($post_data['verify_key'])) {
@@ -454,7 +454,7 @@ class SSLCommerz
     }
 
     # FUNCTION TO GET IMAGES FROM WEB
-    protected function _get_image($gw = "", $source = array())
+    protected function _get_image(string $gw = "", array $source = [])
     {
         $logo = "";
         if (!empty($source) && isset($source['desc'])) {

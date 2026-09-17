@@ -15,7 +15,7 @@ class RefundRequestController extends Controller
 
     public function get_list()
     {
-        $refunds = RefundRequest::where('user_id', auth()->user()->id)->latest()->paginate(10);
+        $refunds = RefundRequest::where('user_id', api_user()->id)->latest()->paginate(10);
 
         return new RefundRequestCollection($refunds);
     }
@@ -24,7 +24,7 @@ class RefundRequestController extends Controller
     {
         $order_detail = OrderDetail::where('id', $request->id)->first();
         $refund = new RefundRequest;
-        $refund->user_id = auth()->user()->id;
+        $refund->user_id = api_user()->id;
         $refund->order_id = $order_detail->order_id;
         $refund->order_detail_id = $order_detail->id;
         $refund->seller_id = $order_detail->seller_id;

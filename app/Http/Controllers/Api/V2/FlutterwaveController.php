@@ -6,10 +6,14 @@ use App\Models\CombinedOrder;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
-use KingFlamez\Rave\Facades\Rave as Flutterwave;
 
 class FlutterwaveController extends Controller
 {
+    private function flutterwave()
+    {
+        $raveClass = 'KingFlamez\\Rave\\Facades\\Rave';
+        return new $raveClass;
+    }
 
     public function getUrl(Request $request)
     {
@@ -39,7 +43,7 @@ class FlutterwaveController extends Controller
     {
         $user = User::find($user_id);
         //This generates a payment reference
-        $reference = Flutterwave::generateReference();
+        $reference = $this->flutterwave()->generateReference();
 
         // Enter the details of the payment
         $data = [
@@ -70,7 +74,7 @@ class FlutterwaveController extends Controller
             ]
         ];
 
-        $payment = Flutterwave::initializePayment($data);
+        $payment = $this->flutterwave()->initializePayment($data);
 
 
         if ($payment['status'] !== 'success') {
@@ -88,8 +92,8 @@ class FlutterwaveController extends Controller
 
         //if payment is successful
         if ($status ==  'successful') {
-            $transactionID = Flutterwave::getTransactionIDFromCallback();
-            $data = Flutterwave::verifyTransaction($transactionID);
+            $transactionID = $this->flutterwave()->getTransactionIDFromCallback();
+            $data = $this->flutterwave()->verifyTransaction($transactionID);
 
             try {
                 $payment = $data['data'];

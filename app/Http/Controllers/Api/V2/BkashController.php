@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class BkashController extends Controller
 {
-    private $base_url;
+    private string $base_url;
     public function __construct()
     {
         if (get_setting('bkash_sandbox', 1)) {
@@ -78,12 +78,12 @@ class BkashController extends Controller
         }
     }
 
-    public function webpage($token, $amount)
+    public function webpage(string $token, int|float $amount)
     {
         return view('frontend.payment.bkash_app', compact('token', 'amount'));
     }
 
-    public function checkout($token, $amount)
+    public function checkout(string $token, int|float $amount)
     {
         $auth = $token;
 
@@ -115,7 +115,7 @@ class BkashController extends Controller
         return $resultdata;
     }
 
-    public function execute($token, Request $request)
+    public function execute(string $token, Request $request)
     {
         $paymentID = $request->paymentID;
         $auth = $token;

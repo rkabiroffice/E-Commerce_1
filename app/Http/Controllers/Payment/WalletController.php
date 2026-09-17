@@ -7,15 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Models\CombinedOrder;
 use App\Models\CustomerPackage;
 use App\Models\SellerPackage;
-use Session;
-use Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
 {
     public function pay(){
         if(Session::has('payment_type')){
             if(Session::get('payment_type') == 'cart_payment'){
-                $user = Auth::user();
+                $user = User::findOrFail(Auth::id());
                 $combined_order = CombinedOrder::findOrFail(Session::get('combined_order_id'));
                 if ($user->balance >= $combined_order->grand_total) {
                     $user->balance -= $combined_order->grand_total;

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V2;
 use App\Models\User;
 use App\Models\CombinedOrder;
 use Illuminate\Http\Request;
-use PaytmWallet;
+use Anand\LaravelPaytmWallet\Facades\PaytmWallet;
 
 class PaytmController extends Controller
 {
@@ -22,7 +22,7 @@ class PaytmController extends Controller
             $package_id = $request->package_id;
         }
 
-        
+
         $user = User::find($request->user_id);
 
         if ($payment_type == 'cart_payment') {
@@ -36,16 +36,16 @@ class PaytmController extends Controller
                 'mobile_number' => $user->phone,
                 'email' => $user->email,
                 'amount' => $amount,
-                'callback_url' => route('api.paytm.callback', 
+                'callback_url' => route('api.paytm.callback',
                 [
-                    "payment_type" => $payment_type, 
-                    "combined_order_id" => $combined_order_id, 
-                    "amount" => $amount, 
+                    "payment_type" => $payment_type,
+                    "combined_order_id" => $combined_order_id,
+                    "amount" => $amount,
                     "user_id" => $user_id
                 ])
-                
+
             ]);
-   
+
             return $payment->receive();
         } elseif ($payment_type == 'wallet_payment') {
             $amount = $amount;
@@ -56,11 +56,11 @@ class PaytmController extends Controller
                 'mobile_number' => $user->phone,
                 'email' => $user->email,
                 'amount' => $amount,
-                'callback_url' => route('api.paytm.callback', 
+                'callback_url' => route('api.paytm.callback',
                 [
-                    "payment_type" => $payment_type, 
-                    "combined_order_id" => $combined_order_id, 
-                    "amount" => $amount, 
+                    "payment_type" => $payment_type,
+                    "combined_order_id" => $combined_order_id,
+                    "amount" => $amount,
                     "user_id" => $user_id
                 ])
             ]);
@@ -74,11 +74,11 @@ class PaytmController extends Controller
                 'mobile_number' => $user->phone,
                 'email' => $user->email,
                 'amount' => $amount,
-                'callback_url' => route('api.paytm.callback', 
+                'callback_url' => route('api.paytm.callback',
                 [
-                    "payment_type" => $payment_type, 
-                    "combined_order_id" => $combined_order_id, 
-                    "amount" => $amount, 
+                    "payment_type" => $payment_type,
+                    "combined_order_id" => $combined_order_id,
+                    "amount" => $amount,
                     "user_id" => $user_id,
                     "package_id" => $package_id,
                 ])

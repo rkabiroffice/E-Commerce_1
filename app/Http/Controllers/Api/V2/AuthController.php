@@ -11,9 +11,9 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Notifications\AppEmailVerificationNotification;
-use Hash;
+use Illuminate\Support\Facades\Hash;
 use GeneaLabs\LaravelSocialiter\Facades\Socialiter;
-use Socialite;
+use Laravel\Socialite\Facades\Socialite;
 use App\Models\Cart;
 use App\Services\SocialRevoke;
 
@@ -167,13 +167,13 @@ class AuthController extends Controller
                 }
             }
             else{
-                return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401); 
-            }  
+                return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
+            }
         }
         else {
             return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
         }
-        
+
     }
 
     public function user(Request $request)
@@ -205,7 +205,9 @@ class AuthController extends Controller
 
         switch ($request->social_provider) {
             case 'facebook':
-                $social_user = Socialite::driver('facebook')->fields([
+                /** @var \Laravel\Socialite\Two\FacebookProvider $facebookProvider */
+                $facebookProvider = Socialite::driver('facebook');
+                $social_user = $facebookProvider->fields([
                     'name',
                     'first_name',
                     'last_name',
@@ -213,15 +215,17 @@ class AuthController extends Controller
                 ]);
                 break;
             case 'google':
-                $social_user = Socialite::driver('google')
-                    ->scopes(['profile', 'email']);
+                /** @var \Laravel\Socialite\Two\AbstractProvider $googleProvider */
+                $googleProvider = Socialite::driver('google');
+                $social_user = $googleProvider->scopes(['profile', 'email']);
                 break;
             case 'twitter':
                 $social_user = Socialite::driver('twitter');
                 break;
             case 'apple':
-                $social_user = Socialite::driver('sign-in-with-apple')
-                    ->scopes(['name', 'email']);
+                /** @var \Laravel\Socialite\Two\AbstractProvider $appleProvider */
+                $appleProvider = Socialite::driver('sign-in-with-apple');
+                $social_user = $appleProvider->scopes(['name', 'email']);
                 break;
             default:
                 $social_user = null;
@@ -231,8 +235,10 @@ class AuthController extends Controller
         }
 
         if ($request->social_provider == 'twitter') {
+            /** @var \Laravel\Socialite\One\AbstractProvider $social_user */
             $social_user_details = $social_user->userFromTokenAndSecret($request->access_token, $request->secret_token);
         } else {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $social_user */
             $social_user_details = $social_user->userFromToken($request->access_token);
         }
 
@@ -246,7 +252,7 @@ class AuthController extends Controller
             $existingUserByProviderId->access_token = $social_user_details->token;
             if ($request->social_provider == 'apple') {
                 $existingUserByProviderId->refresh_token = $social_user_details->refreshToken;
-                if (!isset($social_user->user['is_private_email'])) {
+                if (!isset($social_user_details->user['is_private_email'])) {
                     $existingUserByProviderId->email = $social_user_details->email;
                 }
             }
@@ -256,7 +262,7 @@ class AuthController extends Controller
             $existing_or_new_user = User::firstOrNew(
                 [['email', '!=', null], 'email' => $social_user_details->email]
             );
-            
+
             $existing_or_new_user->user_type = 'customer';
             $existing_or_new_user->provider_id = $social_user_details->id;
             $existing_or_new_user->provider = $request->social_provider;
@@ -267,7 +273,7 @@ class AuthController extends Controller
                     } else {
                         $existing_or_new_user->name = 'Apple User';
                     }
-                    
+
                 } else {
                     $existing_or_new_user->name = $social_user_details->name;
                 }
@@ -281,7 +287,7 @@ class AuthController extends Controller
         }
     }
 
-    protected function loginSuccess($user)
+    protected function loginSuccess(User $user)
     {
         $token = $user->createToken('API Token')->plainTextToken;
         return response()->json([
@@ -305,23 +311,23 @@ class AuthController extends Controller
 
     public function account_deletion()
     {
-        if (auth()->user()) {
-            Cart::where('user_id', auth()->user()->id)->delete();
+        if (api_user()) {
+            Cart::where('user_id', api_user()->id)->delete();
         }
 
-        // if (auth()->user()->provider && auth()->user()->provider != 'apple') {
+        // if (api_user()->provider && api_user()->provider != 'apple') {
         //     $social_revoke =  new SocialRevoke;
-        //     $revoke_output = $social_revoke->apply(auth()->user()->provider);
+        //     $revoke_output = $social_revoke->apply(api_user()->provider);
 
         //     if ($revoke_output) {
         //     }
         // }
 
-        $auth_user = auth()->user();
+        $auth_user = api_user();
         $auth_user->tokens()->where('id', $auth_user->currentAccessToken()->id)->delete();
         $auth_user->customer_products()->delete();
 
-        User::destroy(auth()->user()->id);
+        User::destroy(api_user()->id);
 
         return response()->json([
             "result" => true,

@@ -14,9 +14,9 @@ use App\Models\AffiliateStats;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Category;
-use Auth;
-use DB;
-use Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 
 class AffiliateController extends Controller
@@ -159,7 +159,7 @@ class AffiliateController extends Controller
                 $user->password = Hash::make($request->password);
                 $user->save();
 
-                auth()->login($user, false);
+                Auth::login($user, false);
 
                 if(get_setting('email_verification') != 1){
                     $user->email_verified_at = date('Y-m-d H:m:s');
@@ -182,7 +182,7 @@ class AffiliateController extends Controller
         }
         $data = array();
         $i = 0;
-        foreach (json_decode(AffiliateConfig::where('type', 'verification_form')->first()->value) as $key => $element) {
+        foreach (json_decode(AffiliateConfig::where('type', 'verification_form')->first()->value) as $element) {
             $item = array();
             if ($element->type == 'text') {
                 $item['type'] = 'text';
@@ -222,12 +222,12 @@ class AffiliateController extends Controller
         return view('affiliate.users', compact('affiliate_users'));
     }
 
-    public function show_verification_request($id){
+    public function show_verification_request(int|string $id){
         $affiliate_user = AffiliateUser::findOrFail($id);
         return view('affiliate.show_verification_request', compact('affiliate_user'));
     }
 
-    public function approve_user($id)
+    public function approve_user(int|string $id)
     {
         $affiliate_user = AffiliateUser::findOrFail($id);
         $affiliate_user->status = 1;
@@ -239,7 +239,7 @@ class AffiliateController extends Controller
         return back();
     }
 
-    public function reject_user($id)
+    public function reject_user(int|string $id)
     {
         $affiliate_user = AffiliateUser::findOrFail($id);
         $affiliate_user->status = 0;
@@ -283,7 +283,7 @@ class AffiliateController extends Controller
         return back();
     }
 
-    public function payment_history($id){
+    public function payment_history(int|string $id){
         $affiliate_user = AffiliateUser::findOrFail(decrypt($id));
         $affiliate_payments = $affiliate_user->affiliate_payments();
         return view('affiliate.payment_history', compact('affiliate_payments', 'affiliate_user'));
@@ -408,7 +408,7 @@ class AffiliateController extends Controller
                         $referred_by_user = User::where('referral_code', $orderDetail->product_referral_code)->first();
                         if($referred_by_user != null) {
                             if(AffiliateOption::where('type', 'category_wise_affiliate')->first()->details != null){
-                                foreach (json_decode(AffiliateOption::where('type', 'category_wise_affiliate')->first()->details) as $key => $value) {
+                                foreach (json_decode(AffiliateOption::where('type', 'category_wise_affiliate')->first()->details) as $categoryKey => $value) {
                                     if($value->category_id == $orderDetail->product->category->id){
                                         if($value->commission_type == 'amount'){
                                             $amount = $value->commission;
@@ -446,7 +446,7 @@ class AffiliateController extends Controller
         }
     }
 
-    public function processAffiliateStats($affiliate_user_id, $no_click = 0, $no_item = 0, $no_delivered = 0, $no_cancel = 0) {
+    public function processAffiliateStats(int $affiliate_user_id, $no_click = 0, $no_item = 0, $no_delivered = 0, $no_cancel = 0) {
         $affiliate_stats = AffiliateStats::whereDate('created_at', Carbon::today())
                 ->where("affiliate_user_id", $affiliate_user_id)
                 ->first();
@@ -544,7 +544,7 @@ class AffiliateController extends Controller
         return back();
     }
 
-    public function reject_withdraw_request($id)
+    public function reject_withdraw_request(int|string $id)
     {
         $affiliate_withdraw_request = AffiliateWithdrawRequest::findOrFail($id);
         $affiliate_withdraw_request->status = 2;

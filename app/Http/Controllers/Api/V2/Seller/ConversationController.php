@@ -28,11 +28,11 @@ class ConversationController extends Controller
 
             //SELECT sender_id, receiver_id, title, MAX(created_at) AS max_created_at FROM `conversations` WHERE receiver_id = 3 GROUP BY sender_id order by max_created_at desc;
             // $conversations = Conversation::select('sender_id', 'receiver_id', 'title', DB::raw("MAX(created_at) as max_created_at"))
-            //     ->where('receiver_id', '=', auth()->user()->id)
+            //     ->where('receiver_id', '=', api_user()->id)
             //     ->orderBy('max_created_at', 'DESC')
             //     ->groupBy('sender_id')
             //     ->get();
-            $conversations = Conversation::where('receiver_id', auth()->user()->id)
+            $conversations = Conversation::where('receiver_id', api_user()->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
             return  ConversationResource::collection($conversations);
@@ -45,11 +45,11 @@ class ConversationController extends Controller
     public function send_message_to_customer(Request $requrest)
     {
         $message = new Message();
-        $conversation = Conversation::find($requrest->conversation_id)->where("receiver_id",auth()->user()->id)->first();
+        $conversation = Conversation::find($requrest->conversation_id)->where("receiver_id",api_user()->id)->first();
 
         if($conversation){
         $message->conversation_id = $requrest->conversation_id;
-        $message->user_id = auth()->user()->id;
+        $message->user_id = api_user()->id;
         $message->message = $requrest->message;
         $message->save();
 
@@ -65,12 +65,12 @@ class ConversationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $conversation = Conversation::findOrFail(decrypt($id));
-        if ($conversation->sender_id == auth()->user()->id) {
+        if ($conversation->sender_id == api_user()->id) {
             $conversation->sender_viewed = 1;
-        } elseif ($conversation->receiver_id == auth()->user()->id) {
+        } elseif ($conversation->receiver_id == api_user()->id) {
             $conversation->receiver_viewed = 1;
         }
         $conversation->save();
@@ -78,10 +78,10 @@ class ConversationController extends Controller
         return new ConversationCollection($conversation);
     }
 
-    public function showMessages($id)
+    public function showMessages(int|string $id)
     {
         $conversation = Conversation::findOrFail($id);
-        if ($conversation->receiver_id == auth()->user()->id) {
+        if ($conversation->receiver_id == api_user()->id) {
             $messages = Message::where("conversation_id",$id)->orderBy('created_at', 'DESC')->get();
 
             return new MessageCollection($messages);
@@ -90,7 +90,7 @@ class ConversationController extends Controller
             return $this->failed(translate('You can not see this message.'));
 
         }
-        
+
     }
 
 

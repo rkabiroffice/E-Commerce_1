@@ -12,7 +12,7 @@ use App\Models\CombinedOrder;
 use App\Models\CustomerPackage;
 use App\Models\SellerPackage;
 use App\Models\User;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 
 class StripeController extends Controller

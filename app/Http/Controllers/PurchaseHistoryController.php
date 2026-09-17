@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use DB;
-use Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\Upload;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseHistoryController extends Controller
 {
@@ -36,7 +37,7 @@ class PurchaseHistoryController extends Controller
         return view('frontend.user.digital_purchase_history', compact('orders'));
     }
 
-    public function purchase_history_details($id)
+    public function purchase_history_details(int|string $id)
     {
         $order = Order::findOrFail(decrypt($id));
         $order->delivery_viewed = 1;
@@ -50,7 +51,7 @@ class PurchaseHistoryController extends Controller
         $product = Product::findOrFail(decrypt($request->id));
         $downloadable = false;
         foreach (Auth::user()->orders as $key => $order) {
-            foreach ($order->orderDetails as $key => $orderDetail) {
+            foreach ($order->orderDetails as $detailKey => $orderDetail) {
                 if ($orderDetail->product_id == $product->id && $orderDetail->payment_status == 'paid') {
                     $downloadable = true;
                     break;
@@ -60,7 +61,10 @@ class PurchaseHistoryController extends Controller
         if ($downloadable) {
             $upload = Upload::findOrFail($product->file_name);
             if (env('FILESYSTEM_DRIVER') == "s3") {
-                return \Storage::disk('s3')->download($upload->file_name, $upload->file_original_name . "." . $upload->extension);
+                $fileName = $upload->file_original_name . "." . $upload->extension;
+                return response()->streamDownload(function () use ($upload) {
+                    echo Storage::disk('s3')->get($upload->file_name);
+                }, $fileName);
             } else {
                 if (file_exists(base_path('public/' . $upload->file_name))) {
                     return response()->download(base_path('public/' . $upload->file_name));
@@ -77,9 +81,9 @@ class PurchaseHistoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function order_cancel($id)
+    public function order_cancel(int|string $id)
     {
-        $order = Order::where('id', $id)->where('user_id', auth()->user()->id)->first();
+        $order = Order::where('id', $id)->where('user_id', Auth::user()->id)->first();
         if($order && ($order->delivery_status == 'pending' && $order->payment_status == 'unpaid')) {
             $order->delivery_status = 'cancelled';
             $order->save();

@@ -19,10 +19,10 @@ class CouponController extends Controller
      */
     public function index()
     {
-        $coupons = Coupon::where('user_id', auth()->user()->id)->orderBy('id','desc')->get();
+        $coupons = Coupon::where('user_id', api_user()->id)->orderBy('id','desc')->get();
         return CouponResource::collection($coupons);
     }
-    
+
 
     /**
      * Store a newly created resource in storage.
@@ -32,7 +32,7 @@ class CouponController extends Controller
      */
     public function store(CouponRequest $request)
     {
-        $user_id = auth()->user()->id;
+        $user_id = api_user()->id;
         Coupon::create($request->validated() + [
             'user_id' => $user_id,
         ]);
@@ -46,9 +46,9 @@ class CouponController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(int|string $id)
     {
-        $coupon = Coupon::where('id', $id)->where('user_id', auth()->user()->id)->first();
+        $coupon = Coupon::where('id', $id)->where('user_id', api_user()->id)->first();
         // dd($coupon);
         return new CouponResource($coupon);
     }
@@ -56,8 +56,8 @@ class CouponController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+    * @param  \Illuminate\Http\Request  $request
+    * @param  \App\Models\Coupon  $coupon
      * @return \Illuminate\Http\Response
      */
     public function update(CouponRequest $request, Coupon $coupon)
@@ -73,20 +73,20 @@ class CouponController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
-        Coupon::where('id', '=', $id)->where('user_id', auth()->user()->id)->delete();
-       
+        Coupon::where('id', '=', $id)->where('user_id', api_user()->id)->delete();
+
         return $this->success(translate('Coupon has been deleted successfully'));
     }
 
     public function coupon_for_product(Request $request)
     {
-        
+
         if($request->coupon_type == "product_base") {
-            
-            $products = Product::where('name','LIKE',"%".$request->name."%")->where('user_id', auth()->user()->id)->paginate(10);
-            // $products = filter_products(Product::where('user_id', auth()->user()->id))->get();
+
+            $products = Product::where('name','LIKE',"%".$request->name."%")->where('user_id', api_user()->id)->paginate(10);
+            // $products = filter_products(Product::where('user_id', api_user()->id))->get();
             return new ProductCollection($products);
         }
     }

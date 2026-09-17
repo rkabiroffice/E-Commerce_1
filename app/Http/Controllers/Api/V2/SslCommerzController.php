@@ -17,13 +17,13 @@ if(!defined("SSLCZ_IS_LOCAL_HOST")){
 
 class SslCommerzController extends Controller
 {
-    public $sslc_submit_url;
-    public $sslc_validation_url;
-    public $sslc_mode;
-    public $sslc_data;
-    public $store_id;
-    public $store_pass;
-    public $error = '';
+    public string $sslc_submit_url = '';
+    public string $sslc_validation_url = '';
+    public string $sslc_mode = '';
+    public array $sslc_data = [];
+    public string $store_id = '';
+    public string $store_pass = '';
+    public string $error = '';
 
     public function __construct()
     {
@@ -58,7 +58,7 @@ class SslCommerzController extends Controller
 
         } else if ($request->payment_type == "wallet_payment" ||
         $request->payment_type ==  "seller_package_payment" ||
-        $request->payment_type ==  "customer_package_payment" 
+        $request->payment_type ==  "customer_package_payment"
 
         ) {
             $post_data['tran_id'] = 'AIZ-' . $request->user_id . '-' . date('Ymd');
@@ -173,7 +173,7 @@ class SslCommerzController extends Controller
     }
 
 
-    public function initiate($post_data)
+    public function initiate(array|string $post_data)
     {
         /*return response()->json([
             'post_data' => json_encode($post_data),
@@ -236,7 +236,7 @@ class SslCommerzController extends Controller
 
 
     # SEND CURL REQUEST
-    public function sendRequest($data)
+    public function sendRequest(array $data)
     {
 
 
@@ -276,7 +276,7 @@ class SslCommerzController extends Controller
     }
 
     # SET SSLCOMMERZ PAYMENT MODE - LIVE OR TEST
-    public function setSSLCommerzMode($test)
+    public function setSSLCommerzMode(bool|int $test)
     {
         if ($test) {
             $this->sslc_mode = "sandbox";
@@ -286,7 +286,7 @@ class SslCommerzController extends Controller
     }
 
     # VALIDATE SSLCOMMERZ TRANSACTION
-    public function sslcommerz_validate($merchant_trans_id, $merchant_trans_amount, $merchant_trans_currency, $post_data)
+    public function sslcommerz_validate(string $merchant_trans_id, int|float $merchant_trans_amount, string $merchant_trans_currency, array $post_data)
     {
         # MERCHANT SYSTEM INFO
         if ($merchant_trans_id != "" && $merchant_trans_amount != 0) {
@@ -396,7 +396,7 @@ class SslCommerzController extends Controller
     }
 
     # FUNCTION TO CHECK HASH VALUE
-    public function SSLCOMMERZ_hash_varify($store_passwd = "", $post_data)
+    public function SSLCOMMERZ_hash_varify(string $store_passwd = "", array $post_data = [])
     {
 
         if (isset($post_data) && isset($post_data['verify_sign']) && isset($post_data['verify_key'])) {
@@ -438,7 +438,7 @@ class SslCommerzController extends Controller
     }
 
     # FUNCTION TO GET IMAGES FROM WEB
-    public function _get_image($gw = "", $source = array())
+    public function _get_image(string $gw = "", array $source = [])
     {
         $logo = "";
         if (!empty($source) && isset($source['desc'])) {

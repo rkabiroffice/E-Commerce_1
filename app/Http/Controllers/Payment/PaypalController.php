@@ -11,11 +11,6 @@ use Illuminate\Http\Request;
 use App\Models\CombinedOrder;
 use App\Models\CustomerPackage;
 use App\Models\SellerPackage;
-use PayPalCheckoutSdk\Core\PayPalHttpClient;
-use PayPalCheckoutSdk\Core\SandboxEnvironment;
-use PayPalCheckoutSdk\Core\ProductionEnvironment;
-use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 
@@ -29,12 +24,14 @@ class PaypalController extends Controller
         $clientSecret = env('PAYPAL_CLIENT_SECRET');
 
         if (get_setting('paypal_sandbox') == 1) {
-            $environment = new SandboxEnvironment($clientId, $clientSecret);
+            $environmentClass = 'PayPalCheckoutSdk\\Core\\SandboxEnvironment';
         }
         else {
-            $environment = new ProductionEnvironment($clientId, $clientSecret);
+            $environmentClass = 'PayPalCheckoutSdk\\Core\\ProductionEnvironment';
         }
-        $client = new PayPalHttpClient($environment);
+        $environment = new $environmentClass($clientId, $clientSecret);
+        $clientClass = 'PayPalCheckoutSdk\\Core\\PayPalHttpClient';
+        $client = new $clientClass($environment);
 
         if(Session::has('payment_type')) {
             if(Session::get('payment_type') == 'cart_payment') {
@@ -54,7 +51,8 @@ class PaypalController extends Controller
             }
         }
 
-        $request = new OrdersCreateRequest();
+        $requestClass = 'PayPalCheckoutSdk\\Orders\\OrdersCreateRequest';
+        $request = new $requestClass();
         $request->prefer('return=representation');
         $request->body = [
                              "intent" => "CAPTURE",
@@ -104,16 +102,19 @@ class PaypalController extends Controller
         $clientSecret = env('PAYPAL_CLIENT_SECRET');
 
         if (get_setting('paypal_sandbox') == 1) {
-            $environment = new SandboxEnvironment($clientId, $clientSecret);
+            $environmentClass = 'PayPalCheckoutSdk\\Core\\SandboxEnvironment';
         }
         else {
-            $environment = new ProductionEnvironment($clientId, $clientSecret);
+            $environmentClass = 'PayPalCheckoutSdk\\Core\\ProductionEnvironment';
         }
-        $client = new PayPalHttpClient($environment);
+        $environment = new $environmentClass($clientId, $clientSecret);
+        $clientClass = 'PayPalCheckoutSdk\\Core\\PayPalHttpClient';
+        $client = new $clientClass($environment);
 
         // $response->result->id gives the orderId of the order created above
 
-        $ordersCaptureRequest = new OrdersCaptureRequest($request->token);
+        $captureRequestClass = 'PayPalCheckoutSdk\\Orders\\OrdersCaptureRequest';
+        $ordersCaptureRequest = new $captureRequestClass($request->token);
         $ordersCaptureRequest->prefer('return=representation');
         try {
             // Call API with your client and get a response for your call

@@ -10,7 +10,7 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\SellerPackageController;
 use Razorpay\Api\Api;
-use Session;
+use Illuminate\Support\Facades\Session;
 
 
 class RazorpayController extends Controller
@@ -39,7 +39,8 @@ class RazorpayController extends Controller
         //Input items of form
         $input = $request->all();
         //get API Configuration
-        $api = new Api(env('RAZOR_KEY'), env('RAZOR_SECRET'));
+        $apiClass = 'Razorpay\\Api\\Api';
+        $api = new $apiClass(env('RAZOR_KEY'), env('RAZOR_SECRET'));
 
         //Fetch payment information by razorpay_payment_id
         $payment = $api->payment->fetch($input['razorpay_payment_id']);
@@ -51,7 +52,7 @@ class RazorpayController extends Controller
                 $payment_detalis = json_encode(array('id' => $response['id'],'method' => $response['method'],'amount' => $response['amount'],'currency' => $response['currency']));
             } catch (\Exception $e) {
                 return  $e->getMessage();
-                \Session::put('error',$e->getMessage());
+                Session::put('error',$e->getMessage());
                 return redirect()->back();
             }
 

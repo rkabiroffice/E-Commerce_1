@@ -29,21 +29,21 @@ class PurchaseHistoryController extends Controller
                     ->where('delivery_status', $delivery_status);
             });
         }
-        return new PurchaseHistoryMiniCollection($order_query->where('user_id', auth()->user()->id)->latest()->paginate(5));
+        return new PurchaseHistoryMiniCollection($order_query->where('user_id', api_user()->id)->latest()->paginate(5));
     }
 
-    public function details($id)
+    public function details(int|string $id)
     {
-        $order_detail = Order::where('id', $id)->where('user_id', auth()->user()->id)->get();
-        // $order_query = auth()->user()->orders->where('id', $id);
+        $order_detail = Order::where('id', $id)->where('user_id', api_user()->id)->get();
+        // $order_query = api_user()->orders->where('id', $id);
 
         // return new PurchaseHistoryCollection($order_query->get());
         return new PurchaseHistoryCollection($order_detail);
     }
 
-    public function items($id)
+    public function items(int|string $id)
     {
-        $order_id = Order::select('id')->where('id', $id)->where('user_id', auth()->user()->id)->first();
+        $order_id = Order::select('id')->where('id', $id)->where('user_id', api_user()->id)->first();
         $order_query = OrderDetail::where('order_id', $order_id->id);
         return new PurchaseHistoryItemsCollection($order_query->get());
     }
@@ -54,18 +54,18 @@ class PurchaseHistoryController extends Controller
 
         $order_detail_products = OrderDetail::whereHas('order', function($q){
     		$q->where('payment_status', 'paid');
-            $q->where('user_id', auth()->id());
+            $q->where('user_id', api_user()->id);
 		})->with(['product' => function($query){
             $query->where('digital', 1);
           }])
            ->paginate(15);
-      
+
     //   $products = Product::with(['orderDetails', 'orderDetails.order' => function($q) {
     //          $q->where('payment_status', 'paid');
-    //          $q->where('user_id', auth()->id());
+    //          $q->where('user_id', api_user()->id);
     //     }])
     //     ->where('digital', 1)
-    //     ->paginate(15);  
+    //     ->paginate(15);
 
 
 

@@ -11,8 +11,8 @@ use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\SellerPackageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CheckoutController;
-use Session;
-use Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class AamarpayController extends Controller
 {
@@ -21,7 +21,7 @@ class AamarpayController extends Controller
             flash('Please add phone number to your profile')->warning();
             return redirect()->route('profile');
         }
-        
+
         if (Auth::user()->email == null) {
             $email = 'customer@exmaple.com';
         }
@@ -104,7 +104,7 @@ class AamarpayController extends Controller
         $this->redirect_to_merchant($url_forward);
     }
 
-    function redirect_to_merchant($url) {
+    function redirect_to_merchant(string $url) {
         if (get_setting('aamarpay_sandbox') == 1) {
             $base_url = 'https://sandbox.aamarpay.com/';
         }

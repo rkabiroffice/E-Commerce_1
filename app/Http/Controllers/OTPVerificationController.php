@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\PasswordReset;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Order;
 use App\Utility\SmsUtility;
-use Hash;
+use Illuminate\Support\Facades\Hash;
 
 class OTPVerificationController extends Controller
 {
@@ -29,12 +30,11 @@ class OTPVerificationController extends Controller
 
     /**
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
 
     public function verify_phone(Request $request){
-        $user = Auth::user();
+        $user = User::findOrFail(Auth::id());
         if ($user->verification_code == $request->verification_code) {
             $user->email_verified_at = date('Y-m-d h:m:s');
             $user->save();
@@ -50,12 +50,11 @@ class OTPVerificationController extends Controller
 
     /**
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
 
     public function resend_verificcation_code(Request $request){
-        $user = Auth::user();
+        $user = User::findOrFail(Auth::id());
         $user->verification_code = rand(100000,999999);
         $user->save();
         SmsUtility::phone_number_verification($user);
@@ -65,7 +64,6 @@ class OTPVerificationController extends Controller
 
     /**
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
 
@@ -73,16 +71,16 @@ class OTPVerificationController extends Controller
     public function reset_password_with_code(Request $request)
     {
         $phone = "+{$request['country_code']}{$request['phone']}";
-        
+
         if (($user = User::where('phone', $phone)->where('verification_code', $request->code)->first()) != null) {
             if ($request->password == $request->password_confirmation) {
                 $user->password = Hash::make($request->password);
                 $user->email_verified_at = date('Y-m-d h:m:s');
                 $user->save();
                 event(new PasswordReset($user));
-                auth()->login($user, true);
+                Auth::login($user, true);
 
-                if (auth()->user()->user_type == 'admin' || auth()->user()->user_type == 'staff') {
+                if ($user->user_type == 'admin' || $user->user_type == 'staff') {
                     flash("Password has been reset successfully")->success();
                     return redirect()->route('admin.dashboard');
                 }
@@ -98,13 +96,13 @@ class OTPVerificationController extends Controller
         }
     }
 
-  
+
     /**
      * @param  User $user
      * @return void
      */
 
-    public function send_code($user){
+    public function send_code(User $user){
         SmsUtility::phone_number_verification($user);
     }
 
@@ -112,7 +110,7 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_order_code($order){
+    public function send_order_code(Order $order){
         $phone = json_decode($order->shipping_address)->phone;
         if($phone != null){
             SmsUtility::order_placement($phone, $order);
@@ -123,7 +121,7 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_delivery_status($order){
+    public function send_delivery_status(Order $order){
         $phone = json_decode($order->shipping_address)->phone;
         if($phone != null){
             SmsUtility::delivery_status_change($phone, $order);
@@ -134,7 +132,7 @@ class OTPVerificationController extends Controller
      * @param  Order $order
      * @return void
      */
-    public function send_payment_status($order){
+    public function send_payment_status(Order $order){
         $phone = json_decode($order->shipping_address)->phone;
         if($phone != null){
             SmsUtility::payment_status_change($phone, $order);

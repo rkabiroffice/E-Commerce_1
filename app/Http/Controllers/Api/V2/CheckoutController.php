@@ -16,7 +16,7 @@ class CheckoutController
     {
         
         $coupon = Coupon::where('code', $request->coupon_code)->first(); 
-        $cart_items = Cart::where('user_id', auth()->user()->id)->where('owner_id', $coupon->user_id)->get();
+        $cart_items = Cart::where('user_id', api_user()->id)->where('owner_id', $coupon->user_id)->get();
         $coupon_discount = 0;
         if ($cart_items->isEmpty()) {
             return response()->json([
@@ -41,7 +41,7 @@ class CheckoutController
             ]);
         }
 
-        $is_used = CouponUsage::where('user_id', auth()->user()->id)->where('coupon_id', $coupon->id)->first() != null;
+        $is_used = CouponUsage::where('user_id', api_user()->id)->where('coupon_id', $coupon->id)->first() != null;
 
         if ($is_used) {
             return response()->json([
@@ -94,7 +94,7 @@ class CheckoutController
         } 
 
         if($coupon_discount>0){
-            Cart::where('user_id', auth()->user()->id)->update([
+            Cart::where('user_id', api_user()->id)->update([
                 'discount' => $coupon_discount / count($cart_items),
                 'coupon_code' => $request->coupon_code,
                 'coupon_applied' => 1
@@ -116,7 +116,7 @@ class CheckoutController
 
     public function remove_coupon_code(Request $request)
     {
-        Cart::where('user_id', auth()->user()->id)->update([
+        Cart::where('user_id', api_user()->id)->update([
             'discount' => 0.00,
             'coupon_code' => "",
             'coupon_applied' => 0

@@ -22,7 +22,7 @@ class CustomerProductController extends Controller
     
     public function ownProducts()
     {
-        $products = CustomerProduct::where('user_id', auth()->user()->id)->paginate(20);
+        $products = CustomerProduct::where('user_id', api_user()->id)->paginate(20);
         return new ClassifiedProductMiniCollection($products);
     }
 
@@ -47,7 +47,7 @@ class CustomerProductController extends Controller
 
     public function delete($id)
     {
-        $product = CustomerProduct::where("id",$id)->where('user_id', auth()->user()->id)->delete();
+        $product = CustomerProduct::where("id",$id)->where('user_id', api_user()->id)->delete();
 
         if($product)
         return response()->json([
@@ -63,7 +63,7 @@ class CustomerProductController extends Controller
 
     public function changeStatus(Request $req, $id)
     {
-        $product = CustomerProduct::where("id",$id)->where('user_id', auth()->user()->id)->first();
+        $product = CustomerProduct::where("id",$id)->where('user_id', api_user()->id)->first();
 
         $product->status = $req->status;
         $product->save();

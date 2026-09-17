@@ -15,7 +15,7 @@ class FileUploadController extends Controller
 
     public function  image_upload(Request $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         if (!$user) {
             return response()->json([
                 'result' => false,

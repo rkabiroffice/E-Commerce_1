@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Seller;
 
 use Illuminate\Http\Request;
-use Auth;
-use DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {

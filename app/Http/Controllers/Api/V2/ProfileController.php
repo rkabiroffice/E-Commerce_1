@@ -14,24 +14,24 @@ use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\Cart;
-use Hash;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     public function counters()
     {
         return response()->json([
-            'cart_item_count' => Cart::where('user_id', auth()->user()->id)->count(),
-            'wishlist_item_count' => Wishlist::where('user_id', auth()->user()->id)->count(),
-            'order_count' => Order::where('user_id', auth()->user()->id)->count(),
+            'cart_item_count' => Cart::where('user_id', api_user()->id)->count(),
+            'wishlist_item_count' => Wishlist::where('user_id', api_user()->id)->count(),
+            'order_count' => Order::where('user_id', api_user()->id)->count(),
         ]);
     }
 
     public function update(Request $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         if(!$user){
             return response()->json([
                 'result' => false,
@@ -61,7 +61,7 @@ class ProfileController extends Controller
 
     public function update_device_token(Request $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         if(!$user){
             return response()->json([
                 'result' => false,
@@ -82,7 +82,7 @@ class ProfileController extends Controller
 
     public function updateImage(Request $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         if(!$user){
             return response()->json([
                 'result' => false,
@@ -194,7 +194,7 @@ class ProfileController extends Controller
     // not user profile image but any other base 64 image through uploader
     public function imageUpload(Request $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
         if(!$user){
             return response()->json([
                 'result' => false,
@@ -313,7 +313,7 @@ class ProfileController extends Controller
         $phone_available_message = translate("User phone number not found");
         $email_available_message = translate("User email  not found");
 
-        $user = User::find(auth()->user()->id);
+        $user = User::find(api_user()->id);
 
         if ($user->phone != null || $user->phone != "") {
             $phone_available = true;

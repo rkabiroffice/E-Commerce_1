@@ -11,7 +11,7 @@ class PaymentController extends Controller
 {
     //
     public function getHistory(){
-        $sellerId = auth()->user()->id;
+        $sellerId = api_user()->id;
         $payments = Payment::orderBy('created_at', 'desc')->where('seller_id',$sellerId)->latest()->paginate(10);;
         return  SellerPaymentResource::collection($payments);
     }

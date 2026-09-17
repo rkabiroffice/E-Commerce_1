@@ -7,8 +7,8 @@ use App\Models\Conversation;
 use App\Models\BusinessSetting;
 use App\Models\Message;
 use App\Models\Product;
-use Auth;
-use Mail;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Mail\ConversationMailManager;
 
 class ConversationController extends Controller
@@ -92,7 +92,7 @@ class ConversationController extends Controller
         return back();
     }
 
-    public function send_message_to_seller($conversation, $message, $user_type)
+    public function send_message_to_seller(Conversation $conversation, Message $message, string $user_type)
     {
         $array['view'] = 'emails.conversation';
         $array['subject'] = 'Sender:- ' . Auth::user()->name;
@@ -118,10 +118,10 @@ class ConversationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+        * @param  int|string  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int|string $id)
     {
         $conversation = Conversation::findOrFail(decrypt($id));
         if ($conversation->sender_id == Auth::user()->id) {
@@ -137,7 +137,7 @@ class ConversationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+    * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function refresh(Request $request)
@@ -159,7 +159,7 @@ class ConversationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function admin_show($id)
+    public function admin_show(int|string $id)
     {
         $conversation = Conversation::findOrFail(decrypt($id));
         if ($conversation->sender_id == Auth::user()->id) {
@@ -177,7 +177,7 @@ class ConversationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(int|string $id)
     {
         //
     }
@@ -189,7 +189,7 @@ class ConversationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
         //
     }
@@ -200,7 +200,7 @@ class ConversationController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int|string $id)
     {
         $conversation = Conversation::findOrFail(decrypt($id));
         $conversation->messages()->delete();

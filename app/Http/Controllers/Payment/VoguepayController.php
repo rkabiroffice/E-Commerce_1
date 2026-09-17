@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerPackageController;
 use App\Http\Controllers\WalletController;
-use GuzzleHttp\Client;
 use App\Models\BusinessSetting;
-use Session;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
 
 class VoguepayController extends Controller
 {
@@ -25,7 +25,7 @@ class VoguepayController extends Controller
         }
     }
 
-    public function paymentSuccess($id)
+    public function paymentSuccess(string $id)
     {
         if (BusinessSetting::where('type', 'voguepay_sandbox')->first()->value == 1) {
             $url = '//voguepay.com/?v_transaction_id='.$id.'&type=json&demo=true';
@@ -33,9 +33,8 @@ class VoguepayController extends Controller
         else {
             $url = '//voguepay.com/?v_transaction_id='.$id.'&type=json';
         }
-        $client = new Client();
-        $response = $client->request('GET',$url);
-        $obj = json_decode($response->getBody());
+        $response = Http::get($url);
+        $obj = json_decode($response->body());
 
         if($obj->response_message == 'Approved'){
             $payment_detalis = json_encode($obj);

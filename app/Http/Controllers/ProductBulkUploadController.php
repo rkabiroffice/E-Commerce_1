@@ -8,9 +8,8 @@ use App\Models\Brand;
 use App\Models\User;
 use App\Models\ProductsImport;
 use App\Models\ProductsExport;
-use PDF;
-use Excel;
-use Auth;
+use niklasravnsborg\LaravelPdf\PdfWrapper;
+use Illuminate\Support\Facades\Auth;
 
 class ProductBulkUploadController extends Controller
 {
@@ -36,15 +35,15 @@ class ProductBulkUploadController extends Controller
         }
     }
 
-    public function export(){
-        return Excel::download(new ProductsExport, 'products.xlsx');
+    public function export(\Maatwebsite\Excel\Excel $excel){
+        return $excel->download(new ProductsExport, 'products.xlsx');
     }
 
     public function pdf_download_category()
     {
         $categories = Category::all();
 
-        return PDF::loadView('backend.downloads.category',[
+        return (new PdfWrapper)->loadView('backend.downloads.category',[
             'categories' => $categories,
         ], [], [])->download('category.pdf');
     }
@@ -53,7 +52,7 @@ class ProductBulkUploadController extends Controller
     {
         $brands = Brand::all();
 
-        return PDF::loadView('backend.downloads.brand',[
+        return (new PdfWrapper)->loadView('backend.downloads.brand',[
             'brands' => $brands,
         ], [], [])->download('brands.pdf');
     }
@@ -62,19 +61,19 @@ class ProductBulkUploadController extends Controller
     {
         $users = User::where('user_type','seller')->get();
 
-        return PDF::loadView('backend.downloads.user',[
+        return (new PdfWrapper)->loadView('backend.downloads.user',[
             'users' => $users,
         ], [], [])->download('user.pdf');
 
     }
 
-    public function bulk_upload(Request $request)
+    public function bulk_upload(Request $request, \Maatwebsite\Excel\Excel $excel)
     {
         if($request->hasFile('bulk_file')){
             $import = new ProductsImport;
-            Excel::import($import, request()->file('bulk_file'));
+            $excel->import($import, request()->file('bulk_file'));
         }
-        
+
         return back();
     }
 

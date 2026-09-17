@@ -16,11 +16,11 @@ class FlashDealController extends Controller
             ->where('start_date', '<=', strtotime(date('d-m-Y')))
             ->where('end_date', '>=', strtotime(date('d-m-Y')))
             ->get();
-            
+
         return new FlashDealCollection($flash_deals);
     }
 
-    public function products($id)
+    public function products(int|string $id)
     {
         $flash_deal = FlashDeal::find($id);
         $products = collect();
